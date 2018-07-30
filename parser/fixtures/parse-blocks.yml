@@ -1,0 +1,19 @@
+
+-
+  text: "```py\nthis is code\n```\n"
+  result:
+    py: this is code
+
+-
+  text: "blah blah\n\n```js\nthis is a block\n```\na b c"
+  result:
+    js: this is a block
+
+-
+  text: "x y z\n```js\njavascript 1\n```\n\n\n```py\npython block\n```\n```js\njavascript 2\n```"
+  result:
+    js: |
+      javascript 1
+
+      javascript 2
+    py: python block
