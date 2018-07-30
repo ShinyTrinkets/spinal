@@ -2,12 +2,11 @@ package main
 
 import (
 	"os"
-	// "path"
-	// "sort"
+	"path"
 	// "time"
 
 	"github.com/ShinyTrinkets/gears.go/parser"
-	// "github.com/ShinyTrinkets/overseer"
+	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/jawher/mow.cli"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -36,6 +35,7 @@ func main() {
 
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("convert", "Convert all valid files from the specified folder", cmdConvert)
+	app.Command("run-one", "Generate code from a valid file and execute it", cmdRunOne)
 
 	app.Run(os.Args)
 }
@@ -80,5 +80,38 @@ func cmdConvert(cmd *cli.Cmd) {
 				log.Info().Msgf("%s => %s\n", infile[baseLen:], outFile[baseLen:])
 			}
 		}
+	}
+}
+
+func cmdRunOne(cmd *cli.Cmd) {
+	cmd.Spec = "FILE"
+	fname := cmd.StringArg("FILE", "", "the file to convert and run")
+
+	cmd.Action = func() {
+		fi, err := os.Stat(*fname)
+		if err != nil {
+			log.Fatal().Err(err)
+		}
+		if fi.IsDir() {
+			log.Fatal().Msg("The path must be a file")
+		}
+
+		parseFile := parser.ParseFile(*fname)
+		convFiles, err := parser.ConvertFile(parseFile)
+		if err != nil {
+			log.Fatal().Err(err)
+		}
+		log.Print("=== RUN-ONE ===")
+
+		ovr := overseer.NewOverseer()
+
+		dir := path.Dir(*fname)
+		for lang, outFile := range convFiles {
+			exe := parser.CodeBlocks[lang].Executable
+			p := ovr.Add(parseFile.Id, exe, outFile)
+			p.Dir = dir
+		}
+
+		ovr.SuperviseAll()
 	}
 }
