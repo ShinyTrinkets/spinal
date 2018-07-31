@@ -1,0 +1,29 @@
+{
+  "authors": [
+    "Cristi Constantin <cristi.constantin@live.com>"
+  ],
+  "dependencies": {
+    "@croqaz/port-scan": "0.x",
+    "fs-extra": "7.x",
+    "jimp": "0.x",
+    "lowdb": "1.x",
+    "node-fetch": "2.x",
+    "pino": "4.x",
+    "pino-multi-stream": "3.x"
+  },
+  "description": "Gears app examples",
+  "engines": {
+    "node": ">=8.0"
+  },
+  "keywords": [
+    "🔩",
+    "gears",
+    "trinkets",
+    "automation"
+  ],
+  "license": "MIT",
+  "main": "README.md",
+  "name": "@gears.go/examples",
+  "repository": "https://github.com/ShinyTrinkets/gears.go/tree/master/examples",
+  "version": "0.0.1"
+}
