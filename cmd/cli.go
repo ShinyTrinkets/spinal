@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path"
-	// "time"
 
 	"github.com/ShinyTrinkets/gears.go/parser"
 	"github.com/ShinyTrinkets/overseer.go"
@@ -36,6 +35,7 @@ func main() {
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("convert", "Convert all valid files from the specified folder", cmdConvert)
 	app.Command("run-one", "Generate code from a valid file and execute it", cmdRunOne)
+	app.Command("run", "Convert all valid files from folder and execute them", cmdRunAll)
 
 	app.Run(os.Args)
 }
@@ -109,7 +109,38 @@ func cmdRunOne(cmd *cli.Cmd) {
 		for lang, outFile := range convFiles {
 			exe := parser.CodeBlocks[lang].Executable
 			p := ovr.Add(parseFile.Id, exe, outFile)
-			p.Dir = dir
+			p.SetDir(dir)
+			// TODO: maybe also DelayStart & RetryTimes?
+		}
+
+		ovr.SuperviseAll()
+	}
+}
+
+func cmdRunAll(cmd *cli.Cmd) {
+	cmd.Spec = "FOLDER"
+	dir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
+
+	cmd.Action = func() {
+		// This function will perform all folder checks
+		pairs, err := parser.ConvertFolder(*dir)
+
+		if err != nil {
+			log.Fatal().Err(err)
+		}
+		log.Print("=== RUN ALL ===")
+
+		baseLen := len(*dir) + 1
+		ovr := overseer.NewOverseer()
+
+		for infile, convFiles := range pairs {
+			for lang, outFile := range convFiles {
+				log.Info().Msgf("%s => %s\n", infile[baseLen:], outFile[baseLen:])
+				exe := parser.CodeBlocks[lang].Executable
+				p := ovr.Add(outFile[baseLen:], exe, outFile)
+				p.SetDir(*dir)
+				// TODO: maybe also DelayStart & RetryTimes?
+			}
 		}
 
 		ovr.SuperviseAll()
