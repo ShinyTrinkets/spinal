@@ -25,6 +25,8 @@ func main() {
 
 	app.Before = func() {
 		zerolog.TimeFieldFormat = ""
+		zerolog.MessageFieldName = "m"
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		if *dbg {
 			zerolog.SetGlobalLevel(zerolog.DebugLevel)
 		} else {
