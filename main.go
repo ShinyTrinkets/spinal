@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path"
+	"strings"
 
 	"github.com/ShinyTrinkets/gears.go/parser"
 	"github.com/ShinyTrinkets/overseer.go"
@@ -13,7 +14,7 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.2"
+	Version = "0.0.3"
 )
 
 func main() {
@@ -83,7 +84,11 @@ func cmdConvert(cmd *cli.Cmd) {
 		baseLen := len(*dir) + 1
 		for infile, outFiles := range pairs {
 			for _, outFile := range outFiles {
-				log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
+				if strings.Index(infile, *dir) == 0 {
+					log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
+				} else {
+					log.Info().Msgf("%s => %s", infile, outFile)
+				}
 			}
 		}
 	}
@@ -112,9 +117,11 @@ func cmdRunOne(cmd *cli.Cmd) {
 		ovr := overseer.NewOverseer()
 
 		dir := path.Dir(*fname)
+		baseLen := len(dir) + 1
+
 		for lang, outFile := range convFiles {
 			exe := parser.CodeBlocks[lang].Executable
-			p := ovr.Add(parseFile.Id, exe, outFile)
+			p := ovr.Add(parseFile.Id, exe, outFile[baseLen:])
 			p.SetDir(dir)
 			// TODO: maybe also DelayStart & RetryTimes?
 		}
