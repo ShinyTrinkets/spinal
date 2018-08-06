@@ -13,7 +13,7 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.1"
+	Version = "0.0.2"
 )
 
 func main() {
@@ -59,7 +59,11 @@ func cmdList(cmd *cli.Cmd) {
 				// log.Print("Invalid: " + parsed.Path)
 				continue
 			}
-			log.Info().Msgf("%s : %d lang", parsed.Path, len(parsed.Blocks))
+			enabled := "✅"
+			if (!parsed.Enabled) {
+				enabled = "❌"
+			}
+			log.Info().Msgf("%s  %s : %d lang", enabled, parsed.Path, len(parsed.Blocks))
 		}
 	}
 }
