@@ -18,7 +18,13 @@ import (
 // or generate code files from the code blocks.
 func ListCodeFiles(folder string) ([]string, error) {
 	fileList := []string{}
-	err := filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
+	// Resolve potential links
+	realFolder, err := filepath.EvalSymlinks(folder)
+	if err != nil {
+		return fileList, err
+	}
+
+	err = filepath.Walk(realFolder, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

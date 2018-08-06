@@ -60,7 +60,7 @@ func cmdList(cmd *cli.Cmd) {
 				continue
 			}
 			enabled := "✅"
-			if (!parsed.Enabled) {
+			if !parsed.Enabled {
 				enabled = "❌"
 			}
 			log.Info().Msgf("%s  %s : %d lang", enabled, parsed.Path, len(parsed.Blocks))
@@ -83,7 +83,7 @@ func cmdConvert(cmd *cli.Cmd) {
 		baseLen := len(*dir) + 1
 		for infile, outFiles := range pairs {
 			for _, outFile := range outFiles {
-				log.Info().Msgf("%s => %s\n", infile[baseLen:], outFile[baseLen:])
+				log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
 			}
 		}
 	}
@@ -141,7 +141,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 
 		for infile, convFiles := range pairs {
 			for lang, outFile := range convFiles {
-				log.Info().Msgf("%s => %s\n", infile[baseLen:], outFile[baseLen:])
+				log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
 				exe := parser.CodeBlocks[lang].Executable
 				p := ovr.Add(outFile[baseLen:], exe, outFile)
 				p.SetDir(*dir)
