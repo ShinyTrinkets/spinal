@@ -50,6 +50,7 @@ func codeGeneratedByMsg(lang string) (str string) {
 		cmt + " Don't edit; Your changes will be overwritten!"
 
 	if lang == "js" {
+		// TODO :: remove later
 		str += "\nconsole.log('EXEC ::', process.execPath)"
 		str += "\nconsole.log('CWD ::', process.cwd())"
 	}
@@ -72,7 +73,7 @@ func codeLangImports(front FrontMatter, lang string) (str string) {
 		if front.Log {
 			str += ("\n" + logCode(front, lang) + "\n")
 		}
-		str += "const trigger = require('../langs/"+lang+"/triggers');\n"
+		str += "const trigger = require('trinkets/triggers');\n"
 	}
 	return
 }
