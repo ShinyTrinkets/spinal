@@ -14,7 +14,7 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.3"
+	Version = "0.0.4"
 )
 
 func main() {
@@ -150,7 +150,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 			for lang, outFile := range convFiles {
 				log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
 				exe := parser.CodeBlocks[lang].Executable
-				p := ovr.Add(outFile[baseLen:], exe, outFile)
+				p := ovr.Add(outFile[baseLen:], exe, outFile[baseLen:])
 				p.SetDir(*dir)
 				// TODO: maybe also DelayStart & RetryTimes?
 			}

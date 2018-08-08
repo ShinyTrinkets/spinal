@@ -59,7 +59,7 @@ function dbSave (host, ports, ok) {
     .write()
 }
 
-console.log('Happy Pinging !!')
+console.log('Happy Pinger 👉  started !!')
 ```
 
 ## Good bye watcher 🛌

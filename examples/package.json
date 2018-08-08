@@ -9,7 +9,8 @@
     "lowdb": "1.x",
     "node-fetch": "2.x",
     "pino": "4.x",
-    "pino-multi-stream": "3.x"
+    "pino-multi-stream": "3.x",
+    "trinkets": "*"
   },
   "description": "Gears app examples",
   "engines": {

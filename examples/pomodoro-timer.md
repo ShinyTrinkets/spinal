@@ -1,6 +1,6 @@
 ---
 id: pomodoro-timer
-trinkets: false
+trinkets: true
 log: false
 db: false
 ---
@@ -25,6 +25,8 @@ function action_break () {
 function action_work () {
   console.warn('Back to work 💪')
 }
+
+console.log('Pomodoro 🍅  timer ⏰  started !')
 ```
 
 ## Good bye 🕰
