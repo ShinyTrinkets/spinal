@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/ShinyTrinkets/gears.go/http"
 	"github.com/ShinyTrinkets/gears.go/parser"
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/jawher/mow.cli"
@@ -14,12 +15,12 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.4"
+	Version = "0.0.5"
 )
 
 func main() {
 	app := cli.App(Name, "Pretty dumb code runner")
-	app.Version("v version", Name+" v"+Version)
+	app.Version("v version", "v"+Version)
 
 	app.Spec = "[-d]"
 	dbg := app.BoolOpt("d debug", false, "Debug mode enabled")
@@ -145,6 +146,14 @@ func cmdRunAll(cmd *cli.Cmd) {
 
 		baseLen := len(*dir) + 1
 		ovr := overseer.NewOverseer()
+
+		go func() {
+			// Setup HTTP server
+			srv := http.NewServer(":12323")
+			// Enable Overseer endpoints
+			http.HttpOverseer(srv, ovr)
+			http.Serve(srv)
+		}()
 
 		for infile, convFiles := range pairs {
 			for lang, outFile := range convFiles {
