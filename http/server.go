@@ -24,7 +24,7 @@ func NewServer(port string) *echo.Echo {
 
 // Blocking listen and serve
 func Serve(srv *echo.Echo) {
-	log.Info().Msgf("HTTP server start on :%s", srv.Server.Addr)
+	log.Info().Msgf("HTTP server start on '%s'", srv.Server.Addr)
 	if err := gracehttp.Serve(srv.Server); err != nil {
 		log.Fatal().Err(err)
 	} else {

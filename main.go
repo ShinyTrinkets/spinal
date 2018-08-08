@@ -15,15 +15,14 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.6"
+	Version = "0.0.7"
 )
 
 func main() {
 	app := cli.App(Name, "Pretty dumb code runner")
 	app.Version("v version", "v"+Version)
 
-	app.Spec = "[-d]"
-	dbg := app.BoolOpt("d debug", false, "Debug mode enabled")
+	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
 
 	app.Before = func() {
 		zerolog.TimeFieldFormat = ""
@@ -96,7 +95,7 @@ func cmdConvert(cmd *cli.Cmd) {
 }
 
 func cmdRunOne(cmd *cli.Cmd) {
-	cmd.Spec = "[-f] FILE"
+	cmd.Spec = "FILE [-f]"
 	fname := cmd.StringArg("FILE", "", "the file to convert and run")
 	force := cmd.BoolOpt("f force", false, "force by ignoring the header")
 
@@ -136,8 +135,10 @@ func cmdRunOne(cmd *cli.Cmd) {
 }
 
 func cmdRunAll(cmd *cli.Cmd) {
-	cmd.Spec = "FOLDER"
+	cmd.Spec = "FOLDER [-n|--http]"
 	dir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
+	noHttp := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
+	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
 
 	cmd.Action = func() {
 		// This function will perform all folder checks
@@ -152,8 +153,12 @@ func cmdRunAll(cmd *cli.Cmd) {
 		ovr := overseer.NewOverseer()
 
 		go func() {
+			if *noHttp {
+				log.Info().Msg("HTTP server disabled")
+				return
+			}
 			// Setup HTTP server
-			srv := http.NewServer(":12323")
+			srv := http.NewServer(*httpOpts)
 			// Enable Overseer endpoints
 			http.HttpOverseer(srv, ovr)
 			http.Serve(srv)
