@@ -15,7 +15,7 @@ import (
 
 const (
 	Name    = "gears"
-	Version = "0.0.5"
+	Version = "0.0.6"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func cmdList(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		files, err := parser.ParseFolder(*dir, false)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("List failed")
 		}
 		log.Print("=== LIST ===")
 
@@ -78,7 +78,7 @@ func cmdConvert(cmd *cli.Cmd) {
 		// This function will perform all folder checks
 		pairs, err := parser.ConvertFolder(*dir)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("Convert failed")
 		}
 		log.Print("=== CONVERT ===")
 
@@ -96,24 +96,28 @@ func cmdConvert(cmd *cli.Cmd) {
 }
 
 func cmdRunOne(cmd *cli.Cmd) {
-	cmd.Spec = "FILE"
+	cmd.Spec = "[-f] FILE"
 	fname := cmd.StringArg("FILE", "", "the file to convert and run")
+	force := cmd.BoolOpt("f force", false, "force by ignoring the header")
 
 	cmd.Action = func() {
 		fi, err := os.Stat(*fname)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("Run-one failed")
 		}
 		if fi.IsDir() {
 			log.Fatal().Msg("The path must be a file")
 		}
 
 		parseFile := parser.ParseFile(*fname)
-		convFiles, err := parser.ConvertFile(parseFile)
+		convFiles, err := parser.ConvertFile(parseFile, *force)
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("Run-one failed")
 		}
 		log.Print("=== RUN-ONE ===")
+		if *force {
+			log.Warn().Msg("Unsafe mode enabled")
+		}
 
 		ovr := overseer.NewOverseer()
 
@@ -140,7 +144,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 		pairs, err := parser.ConvertFolder(*dir)
 
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Msg("Run-all failed")
 		}
 		log.Print("=== RUN ALL ===")
 

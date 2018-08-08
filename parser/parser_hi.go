@@ -23,7 +23,7 @@ func ConvertFolder(dir string) (map[string]StringToString, error) {
 	}
 
 	for _, p := range files {
-		outFiles, err := ConvertFile(p)
+		outFiles, err := ConvertFile(p, false)
 		if err != nil {
 			// What should this do if the file cannot be converted ?
 			continue // => silently ignore ?
@@ -75,15 +75,15 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 }
 
 // Convert a single text file into 1 or more code files.
-func ConvertFile(codFile CodeFile) (StringToString, error) {
+func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	outFiles := StringToString{}
 
 	// Some logic to decide if the structure is valid
-	if !codFile.IsValid() {
+	if !force && !codFile.IsValid() {
 		return outFiles, errors.New("file header is invalid: " + codFile.Path)
 	}
 	// The code file must be enabled
-	if !codFile.Enabled {
+	if !force && !codFile.Enabled {
 		return outFiles, errors.New("file is marked disabled: " + codFile.Path)
 	}
 	// And must have blocks of code
