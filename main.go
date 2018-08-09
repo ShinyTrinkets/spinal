@@ -5,21 +5,21 @@ import (
 	"path"
 	"strings"
 
-	"github.com/ShinyTrinkets/gears.go/http"
-	"github.com/ShinyTrinkets/gears.go/parser"
 	"github.com/ShinyTrinkets/overseer.go"
+	"github.com/ShinyTrinkets/spinal/http"
+	"github.com/ShinyTrinkets/spinal/parser"
 	"github.com/jawher/mow.cli"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 const (
-	Name    = "gears"
-	Version = "0.0.7"
+	Name    = "spinal"
+	Version = "0.1.0"
 )
 
 func main() {
-	app := cli.App(Name, "Pretty dumb code runner")
+	app := cli.App(Name, "🌀  Experimental code runner")
 	app.Version("v version", "v"+Version)
 
 	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
@@ -27,7 +27,7 @@ func main() {
 	app.Before = func() {
 		zerolog.TimeFieldFormat = ""
 		zerolog.MessageFieldName = "m"
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		// log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		if *dbg {
 			zerolog.SetGlobalLevel(zerolog.DebugLevel)
 		} else {
@@ -37,8 +37,8 @@ func main() {
 
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("convert", "Convert all valid files from the specified folder", cmdConvert)
-	app.Command("run-one", "Generate code from a valid file and execute it", cmdRunOne)
-	app.Command("run", "Convert all valid files from folder and execute them", cmdRunAll)
+	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
+	app.Command("up", "Convert all valid files from folder and execute them", cmdRunAll)
 
 	app.Run(os.Args)
 }

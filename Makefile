@@ -1,5 +1,5 @@
 
-PACKAGE := github.com/ShinyTrinkets/gears.go
+PACKAGE := github.com/ShinyTrinkets/spinal
 
 VERSION_VAR := $(PACKAGE).VersionString
 VERSION_VALUE ?= $(shell git describe --always --tags 2>/dev/null)

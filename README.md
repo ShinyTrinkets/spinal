@@ -1,4 +1,4 @@
-# Gears
+# Trinkets-Spinal
 
 [![Project name][project-img]][project-url]
 [![API stability][stability-img]][stability-url]

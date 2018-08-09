@@ -1,6 +1,6 @@
-# Gears examples
+# Trinkets-Spinal examples
 
-Examples of stuff that can be run with Gears.
+Examples of stuff that can be run with Trinkets-Spinal.
 
 -----
 

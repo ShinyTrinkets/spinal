@@ -1,5 +1,4 @@
-
-# Gears parser package
+# Trinkets-Spinal parser package
 
 This package is about parsing code blocks from text files.
 

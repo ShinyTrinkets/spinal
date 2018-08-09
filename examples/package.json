@@ -12,19 +12,19 @@
     "pino-multi-stream": "3.x",
     "trinkets": "*"
   },
-  "description": "Gears app examples",
+  "description": "Trinkets-Spinal app examples",
   "engines": {
     "node": ">=8.0"
   },
   "keywords": [
     "🔩",
-    "gears",
+    "spinal",
     "trinkets",
     "automation"
   ],
   "license": "MIT",
   "main": "README.md",
-  "name": "@gears.go/examples",
-  "repository": "https://github.com/ShinyTrinkets/gears.go/tree/master/examples",
+  "name": "@trinkets/examples",
+  "repository": "https://github.com/ShinyTrinkets/spinal/tree/master/examples",
   "version": "0.0.1"
 }
