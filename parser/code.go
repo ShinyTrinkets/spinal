@@ -60,7 +60,13 @@ func codeGeneratedByMsg(lang string) (str string) {
 // This creates a hash-map called `trinkets` = {id, db, log, etc}
 // for each language.
 func codeLangHeader(front FrontMatter, lang string) string {
-	return renderTemplate(CodeBlocks[lang].HeadTmpl, front)
+	tmpl := ""
+	if lang == "js" {
+		tmpl = `const trinkets = { id: "{{.Id}}", db: {{.Db}}, log: {{.Log}} }`
+	} else if lang == "py" {
+		tmpl = `trinkets = { "id": "{{.Id}}", "db": {{.Db}}, "log": {{.Log}} }`
+	}
+	return renderTemplate(tmpl, front)
 }
 
 // This creates the DB and LOG imports for each language.

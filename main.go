@@ -43,7 +43,6 @@ func main() {
 	app.Run(os.Args)
 }
 
-// Sample use: vault list OR vault config list
 func cmdList(cmd *cli.Cmd) {
 	cmd.Spec = "FOLDER"
 	dir := cmd.StringArg("FOLDER", "", "the folder to list")

@@ -35,12 +35,11 @@ type CodeType struct {
 	Name       string
 	Executable string
 	Comment    string
-	HeadTmpl   string
 }
 
 // All known code block types
 var CodeBlocks = map[string]CodeType{
-	"js": {"Javascript", "node", "//", `const trinkets = { id: "{{.Id}}", db: {{.Db}}, log: {{.Log}} }`},
-	"py": {"Python", "python", "#", `trinkets = { "id": "{{.Id}}", "db": {{.Db}}, "log": {{.Log}} }`},
-	// "rb": {"Ruby", "ruby", "#", "trinkets = {...}"},
+	"js": {"Javascript", "node", "//"},
+	"py": {"Python", "python", "#"},
+	// "rb": {"Ruby", "ruby", "#"},
 }
