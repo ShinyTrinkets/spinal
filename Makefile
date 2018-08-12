@@ -1,31 +1,32 @@
 
 PACKAGE := github.com/ShinyTrinkets/spinal
 
-VERSION_VAR := $(PACKAGE).VersionString
+VERSION_VAR := main.VersionString
 VERSION_VALUE ?= $(shell git describe --always --tags 2>/dev/null)
-REV_VAR := $(PACKAGE).RevisionString
-REV_VALUE ?= $(shell git rev-parse HEAD --short 2>/dev/null)
-BUILD_TIME_VAR := $(PACKAGE).BuildTime
-BUILD_TIME_VALUE := $(shell date -u '+%Y-%m-%d-%I:%M:%S-%Z')
+BUILD_TIME_VAR := main.BuildTime
+BUILD_TIME_VALUE := $(shell date -u '+%Y-%m-%dT%I:%M:%S%z')
 
 GOBUILD_LDFLAGS ?= \
 	-X '$(VERSION_VAR)=$(VERSION_VALUE)' \
-	-X '$(REV_VAR)=$(REV_VALUE)' \
 	-X '$(BUILD_TIME_VAR)=$(BUILD_TIME_VALUE)'
 
-.PHONY: test
+.PHONY: test clean deps build release
+
 test:
 	go test -v ./parser
 
-.PHONY: build
 build: deps
 	go install -x -ldflags "$(GOBUILD_LDFLAGS)"
 
-.PHONY: deps
 deps:
 	go get -x -ldflags "$(GOBUILD_LDFLAGS)"
 	go get -t -x -ldflags "$(GOBUILD_LDFLAGS)"
 
-.PHONY: clean
+release:
+	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
+	mv spinal spinal-darwin
+	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
+	mv spinal spinal-linux
+
 clean:
-	go clean -i ./...
+	go clean -x -i ./...

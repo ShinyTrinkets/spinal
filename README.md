@@ -11,7 +11,7 @@ Pretty dumb code runner, ATM.
 
 [MIT](LICENSE) © Cristi Constantin.
 
-[project-img]: https://badgen.net/badge/Project/Trinkets/4B0082
+[project-img]: https://badgen.net/badge/%E2%AD%90/Trinkets/4B0082
 [project-url]: https://github.com/ShinyTrinkets
 [stability-img]: https://badgen.net/badge/Stability/experimental/red
 [stability-url]: https://en.wikipedia.org/wiki/Software_release_life_cycle#Pre-alpha

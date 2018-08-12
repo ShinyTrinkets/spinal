@@ -57,14 +57,14 @@ func codeGeneratedByMsg(lang string) (str string) {
 	return
 }
 
-// This creates a hash-map called `trinkets` = {id, db, log, etc}
+// This creates a hash-map called `spinal` = {id, db, log, etc}
 // for each language.
 func codeLangHeader(front FrontMatter, lang string) string {
 	tmpl := ""
 	if lang == "js" {
-		tmpl = `const trinkets = { id: "{{.Id}}", db: {{.Db}}, log: {{.Log}} }`
+		tmpl = `const spinal = { id: "{{.Id}}", db: {{.Db}}, log: {{.Log}} }`
 	} else if lang == "py" {
-		tmpl = `trinkets = { "id": "{{.Id}}", "db": {{.Db}}, "log": {{.Log}} }`
+		tmpl = `spinal = { "id": "{{.Id}}", "db": {{.Db}}, "log": {{.Log}} }`
 	}
 	return renderTemplate(tmpl, front)
 }

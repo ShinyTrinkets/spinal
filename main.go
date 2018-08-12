@@ -14,13 +14,18 @@ import (
 )
 
 const (
-	Name    = "spinal"
-	Version = "0.1.0"
+	Name    = "Spinal"
+	Descrip = "🌀  Experimental code runner"
+)
+
+var (
+	VersionString string
+	BuildTime     string
 )
 
 func main() {
-	app := cli.App(Name, "🌀  Experimental code runner")
-	app.Version("v version", "v"+Version)
+	app := cli.App(Name, Descrip)
+	app.Version("v version", Name+": "+Descrip+"\nVersion: "+VersionString+"\nBuilt: "+BuildTime)
 
 	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
 
