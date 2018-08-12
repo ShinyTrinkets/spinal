@@ -13,6 +13,7 @@ GOBUILD_LDFLAGS ?= \
 .PHONY: test clean deps build release
 
 test:
+	go vet -v
 	go test -v ./parser
 
 build: deps

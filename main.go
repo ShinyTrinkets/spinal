@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	VersionString string
+	VersionString string // injected by go build
 	BuildTime     string
 )
 
