@@ -16,18 +16,17 @@ test:
 	go vet -v
 	go test -v ./parser
 
-build: deps
-	go install -x -ldflags "$(GOBUILD_LDFLAGS)"
-
 deps:
 	go get -x -ldflags "$(GOBUILD_LDFLAGS)"
 	go get -t -x -ldflags "$(GOBUILD_LDFLAGS)"
 
-release:
-	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
-	mv spinal spinal-darwin
-	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
-	mv spinal spinal-linux
+build: deps
+	go install -x -ldflags "$(GOBUILD_LDFLAGS)"
+	mv $(GOPATH)/bin/spinal $(GOPATH)/bin/spin
+
+release: deps
+	GOOS=darwin GOARCH=amd64 go build -o spin-darwin -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
+	GOOS=linux GOARCH=amd64 go build -o spin-linux -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
 
 clean:
 	go clean -x -i ./...
