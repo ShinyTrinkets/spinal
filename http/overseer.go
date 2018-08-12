@@ -7,12 +7,12 @@ import (
 	"github.com/labstack/echo"
 )
 
-// Enable Overseer endpoints
-func HttpOverseer(srv *echo.Echo, ovr *overseer.Overseer) {
+// OverseerEndpoint enables Overseer endpoints
+func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 	// Get proc by ID
 	srv.GET("/proc/:id", func(c echo.Context) error {
 		id := c.Param("id")
-		return c.JSON(http.StatusOK, ovr.ToJson(id))
+		return c.JSON(http.StatusOK, ovr.ToJSON(id))
 	})
 	// List all procs
 	srv.GET("/proc", func(c echo.Context) error {

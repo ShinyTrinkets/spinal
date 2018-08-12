@@ -32,7 +32,6 @@ func main() {
 	app.Before = func() {
 		zerolog.TimeFieldFormat = ""
 		zerolog.MessageFieldName = "m"
-		// log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		if *dbg {
 			zerolog.SetGlobalLevel(zerolog.DebugLevel)
 		} else {
@@ -53,6 +52,7 @@ func cmdList(cmd *cli.Cmd) {
 	dir := cmd.StringArg("FOLDER", "", "the folder to list")
 
 	cmd.Action = func() {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		files, err := parser.ParseFolder(*dir, false)
 		if err != nil {
 			log.Fatal().Err(err).Msg("List failed")
@@ -78,6 +78,7 @@ func cmdConvert(cmd *cli.Cmd) {
 	dir := cmd.StringArg("FOLDER", "", "the folder to convert")
 
 	cmd.Action = func() {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		// This function will perform all folder checks
 		pairs, err := parser.ConvertFolder(*dir)
 		if err != nil {
@@ -89,9 +90,9 @@ func cmdConvert(cmd *cli.Cmd) {
 		for infile, outFiles := range pairs {
 			for _, outFile := range outFiles {
 				if strings.Index(infile, *dir) == 0 {
-					log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
+					log.Info().Msgf("%s ==> %s", infile[baseLen:], outFile[baseLen:])
 				} else {
-					log.Info().Msgf("%s => %s", infile, outFile)
+					log.Info().Msgf("%s ==> %s", infile, outFile)
 				}
 			}
 		}
@@ -164,7 +165,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 			// Setup HTTP server
 			srv := http.NewServer(*httpOpts)
 			// Enable Overseer endpoints
-			http.HttpOverseer(srv, ovr)
+			http.OverseerEndpoint(srv, ovr)
 			http.Serve(srv)
 		}()
 

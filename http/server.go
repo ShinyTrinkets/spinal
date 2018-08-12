@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Setup a new HTTP server
+// NewServer sets up a new HTTP server
 func NewServer(port string) *echo.Echo {
 	srv := echo.New()
 	srv.Server.Addr = port
@@ -22,7 +22,7 @@ func NewServer(port string) *echo.Echo {
 	return srv
 }
 
-// Blocking listen and serve
+// Serve listens and serves
 func Serve(srv *echo.Echo) {
 	log.Info().Msgf("HTTP server start on '%s'", srv.Server.Addr)
 	if err := gracehttp.Serve(srv.Server); err != nil {
