@@ -2,8 +2,7 @@ package main
 
 import (
 	"os"
-	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/ShinyTrinkets/spinal/http"
@@ -86,14 +85,9 @@ func cmdConvert(cmd *cli.Cmd) {
 		}
 		log.Print("=== CONVERT ===")
 
-		baseLen := len(*dir) + 1
 		for infile, outFiles := range pairs {
 			for _, outFile := range outFiles {
-				if strings.Index(infile, *dir) == 0 {
-					log.Info().Msgf("%s ==> %s", infile[baseLen:], outFile[baseLen:])
-				} else {
-					log.Info().Msgf("%s ==> %s", infile, outFile)
-				}
+				log.Info().Msgf("%s ==> %s", infile, outFile)
 			}
 		}
 	}
@@ -125,7 +119,7 @@ func cmdRunOne(cmd *cli.Cmd) {
 
 		ovr := overseer.NewOverseer()
 
-		dir := path.Dir(*fname)
+		dir := filepath.Dir(*fname)
 		baseLen := len(dir) + 1
 
 		for lang, outFile := range convFiles {
@@ -148,15 +142,12 @@ func cmdRunAll(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		// This function will perform all folder checks
 		pairs, err := parser.ConvertFolder(*dir)
-
 		if err != nil {
 			log.Fatal().Err(err).Msg("Run-all failed")
 		}
 		log.Print("=== RUN ALL ===")
 
-		baseLen := len(*dir) + 1
 		ovr := overseer.NewOverseer()
-
 		go func() {
 			if *noHttp {
 				log.Info().Msg("HTTP server disabled")
@@ -169,11 +160,13 @@ func cmdRunAll(cmd *cli.Cmd) {
 			http.Serve(srv)
 		}()
 
+		baseLen := len(*dir) + 1
 		for infile, convFiles := range pairs {
 			for lang, outFile := range convFiles {
-				log.Info().Msgf("%s => %s", infile[baseLen:], outFile[baseLen:])
+				log.Info().Msgf("%s ==> %s", infile, outFile)
+
 				exe := parser.CodeBlocks[lang].Executable
-				p := ovr.Add(outFile[baseLen:], exe, outFile[baseLen:])
+				p := ovr.Add(outFile, exe, outFile[baseLen:])
 				p.SetDir(*dir)
 				// TODO: maybe also DelayStart & RetryTimes?
 			}

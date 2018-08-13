@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 type StringToString map[string]string
@@ -37,7 +37,10 @@ func ConvertFolder(dir string) (map[string]StringToString, error) {
 // and extract useful info about them.
 func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	files := []CodeFile{}
-	dir = path.Clean(dir)
+	cwd, err := os.Getwd()
+	if err != nil {
+		return files, err
+	}
 
 	// The path must have a valid name
 	if len(dir) < 2 {
@@ -51,7 +54,11 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 		return files, errors.New("no such folder: " + dir)
 	}
 
-	filesStr, err := ListCodeFiles(dir)
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		return files, err
+	}
+	filesStr, err := ListCodeFiles(absDir)
 	if err != nil {
 		return files, err
 	}
@@ -68,6 +75,10 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 			if len(p.Blocks) < 1 {
 				continue
 			}
+		}
+		p.Path, err = filepath.Rel(cwd, p.Path)
+		if err != nil {
+			continue
 		}
 		files = append(files, p)
 	}
@@ -92,7 +103,7 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	}
 
 	fName := codFile.Path
-	baseLen := len(fName) - len(path.Ext(fName))
+	baseLen := len(fName) - len(filepath.Ext(fName))
 	front := FrontMatter{codFile.Enabled, codFile.Id, codFile.Db, codFile.Log}
 
 	for lang, code := range codFile.Blocks {
