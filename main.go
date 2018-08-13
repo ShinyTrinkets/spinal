@@ -166,8 +166,10 @@ func cmdRunAll(cmd *cli.Cmd) {
 				log.Info().Msgf("%s ==> %s", infile, outFile)
 
 				exe := parser.CodeBlocks[lang].Executable
+				env := append(os.Environ(), "SPIN_FILE="+outFile)
 				p := ovr.Add(outFile, exe, outFile[baseLen:])
 				p.SetDir(*dir)
+				p.SetEnv(env)
 				// TODO: maybe also DelayStart & RetryTimes?
 			}
 		}
