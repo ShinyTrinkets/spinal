@@ -4,11 +4,16 @@ import (
 	"time"
 )
 
-const VALID_EXT = ".md"
-const BLANKS = "\t\n\r "
+const (
+	validSourceExt = ".md"
+	maxFolderDepth = 3
+	blankRunes     = "\t\n\r "
+)
+
+type StringToString map[string]string
 
 type FrontMatter struct {
-	Enabled bool   `yaml:"trinkets"`
+	Enabled bool   `yaml:"spinal"`
 	Id      string `yaml:"id"`
 	Db      bool   `yaml:"db,omitempty"`
 	Log     bool   `yaml:"log,omitempty"`

@@ -1,41 +1,166 @@
 package parser
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
-	"github.com/immortal/xtime"
 	"gopkg.in/yaml.v2"
 )
 
-// Lists all candidate text files from a folder.
+// For readability, higher level functions go first
+
+// ConvertFolder finds all candidate text files from a folder,
+// and generates code files.
+// The original text files are not changed.
+func ConvertFolder(dir string) (map[string]StringToString, error) {
+	result := map[string]StringToString{}
+
+	files, err := ParseFolder(dir, true)
+	if err != nil {
+		return result, err
+	}
+
+	for _, p := range files {
+		outFiles, err := ConvertFile(p, false)
+		if err != nil {
+			// What should this do if the file cannot be converted ?
+			continue // => silently ignore ?
+		}
+		result[p.Path] = outFiles
+	}
+	return result, nil
+}
+
+// ParseFolder finds all candidate text files from a folder,
+// and extracts useful info about them.
+func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
+	files := []CodeFile{}
+
+	// The path must have a valid name
+	if len(dir) < 2 {
+		return files, errors.New("folder name too short: " + dir)
+	}
+	// and must exist locally
+	stat, err := os.Stat(dir)
+	if err != nil {
+		return files, err
+	}
+	// and must be a folder
+	if !stat.IsDir() {
+		return files, errors.New("no such folder: " + dir)
+	}
+
+	filesStr, err := listCodeFiles(dir)
+	if err != nil {
+		return files, err
+	}
+	if len(filesStr) < 1 {
+		return files, errors.New("no candidate files found")
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return files, err
+	}
+
+	for _, fname := range filesStr {
+		// Parsing needs full absolute path
+		p := ParseFile(fname)
+		if checkInvalid {
+			if !p.IsValid() {
+				continue
+			}
+			if len(p.Blocks) < 1 {
+				continue
+			}
+		}
+		// resolve path relative to current dir
+		if strings.Index(p.Path, cwd) == 0 {
+			p.Path, err = filepath.Rel(cwd, p.Path)
+			if err != nil {
+				continue
+			}
+		}
+		files = append(files, p)
+	}
+	return files, nil
+}
+
+// listCodeFiles returns all candidate text files from a folder.
 // Candidate files should contain fenced code blocks.
 // This list can be used to parse the files,
 // or generate code files from the code blocks.
-func ListCodeFiles(folder string) ([]string, error) {
+func listCodeFiles(folder string) ([]string, error) {
 	fileList := []string{}
-	// Resolve potential links
-	realFolder, err := filepath.EvalSymlinks(folder)
+
+	// Resolve absolute path
+	absDir, err := filepath.Abs(folder)
 	if err != nil {
 		return fileList, err
 	}
+	// Resolve potential symlinks
+	realDir, err := filepath.EvalSymlinks(absDir)
+	if err != nil {
+		return fileList, err
+	}
+	baseLen := len(realDir) + 1
 
-	err = filepath.Walk(realFolder, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(realDir, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		// Code files must have a valid file extension
-		if isFile(path) && filepath.Ext(f.Name()) == VALID_EXT {
+		if isFile(path) && filepath.Ext(f.Name()) == validSourceExt {
+			// Count the slashes to estimate folder depth
+			if strings.Count(path[baseLen:], "/") >= maxFolderDepth {
+				return nil
+			}
+			// Append the full absolute path
 			fileList = append(fileList, path)
 		}
 		return nil
 	})
 	// Possible errors in case the folder cannot be accessed
 	return fileList, err
+}
+
+// Convert a single text file into 1 or more code files.
+func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
+	outFiles := StringToString{}
+
+	// Some logic to decide if the structure is valid
+	if !force && !codFile.IsValid() {
+		return outFiles, errors.New("file header is invalid: " + codFile.Path)
+	}
+	// The code file must be enabled
+	if !force && !codFile.Enabled {
+		return outFiles, errors.New("file is marked disabled: " + codFile.Path)
+	}
+	// And must have blocks of code
+	if len(codFile.Blocks) == 0 {
+		return outFiles, errors.New("file has no blocks of code: " + codFile.Path)
+	}
+
+	fName := codFile.Path
+	baseLen := len(fName) - len(filepath.Ext(fName))
+	front := FrontMatter{codFile.Enabled, codFile.Id, codFile.Db, codFile.Log}
+
+	for lang, code := range codFile.Blocks {
+		outFile := fName[:baseLen] + "." + lang
+		code = codeGeneratedByMsg(lang) + "\n\n" +
+			codeLangHeader(front, lang) + "\n" +
+			codeLangImports(front, lang) + "\n" + code
+		err := ioutil.WriteFile(outFile, []byte(code), 0644)
+		if err != nil {
+			return outFiles, err
+		}
+		outFiles[lang] = outFile
+	} // for each block of code
+	return outFiles, nil
 }
 
 // Parse a file and return a structure.
@@ -57,7 +182,7 @@ func ParseFile(fname string) CodeFile {
 		return parseFile
 	}
 
-	h, b := SplitHeadBody(string(text))
+	h, b := splitHeadBody(string(text))
 
 	fm := FrontMatter{}
 	if err := yaml.Unmarshal([]byte(h), &fm); err != nil {
@@ -68,38 +193,10 @@ func ParseFile(fname string) CodeFile {
 	return CodeFile{fm, fname, ctime, mtime, ParseBlocks(fm, b)}
 }
 
-// Split text file into front-header and the rest of the text
-func SplitHeadBody(text string) (string, string) {
+// splitHeadBody separates a text into front-header and the rest of the text
+func splitHeadBody(text string) (string, string) {
 	re := regexp.MustCompile("(?sU)^---[\n\r]+.+[\n\r]+---[\n\r]")
-	head := strings.TrimRight(re.FindString(text), BLANKS)
-	body := strings.Trim(text[len(head):], BLANKS)
+	head := strings.TrimRight(re.FindString(text), blankRunes)
+	body := strings.Trim(text[len(head):], blankRunes)
 	return head, body
-}
-
-// Helper that returns true if the path is a regular file
-func isFile(path string) bool {
-	f, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	if m := f.Mode(); !m.IsDir() && m.IsRegular() && m&400 != 0 {
-		return true
-	}
-	return false
-}
-
-// Helper that returns File stats (creation and modif times)
-func fileStats(fname string) (time.Time, time.Time, error) {
-	var c time.Time
-	var m time.Time
-
-	fi, err := os.Stat(fname)
-	if err != nil {
-		// File stats error
-		return c, m, err
-	}
-
-	c = xtime.Get(fi).Ctime()
-	m = xtime.Get(fi).Mtime()
-	return c, m, nil
 }

@@ -24,14 +24,14 @@ func ParseBlocks(front FrontMatter, body string) map[string]string {
 	blocks := map[string]string{}
 
 	for _, v := range reBlk.FindAllString(body, -1) {
-		s := strings.Trim(v, BLANKS)
+		s := strings.Trim(v, blankRunes)
 		s = strings.Trim(s, "`")
-		s = strings.Trim(s, BLANKS)
+		s = strings.Trim(s, blankRunes)
 		lang := reLng.FindString(s)
 		if lang == "" {
 			continue
 		}
-		s = strings.Trim(s[len(lang):], BLANKS)
+		s = strings.Trim(s[len(lang):], blankRunes)
 		// The first block of this type
 		if blocks[lang] == "" {
 			blocks[lang] = s

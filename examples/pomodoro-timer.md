@@ -1,6 +1,6 @@
 ---
 id: pomodoro-timer
-trinkets: true
+spinal: true
 log: false
 db: false
 ---

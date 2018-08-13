@@ -1,6 +1,6 @@
 ---
 id: ping-service
-trinkets: true
+spinal: true
 log: true
 db: true
 ---

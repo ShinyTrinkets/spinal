@@ -17,7 +17,7 @@ func TestParseHeader(t *testing.T) {
 	var text string
 	// Without extra spaces
 	text = "---\nid:  1\n---\nblah blah\n\n"
-	h, b := SplitHeadBody(text)
+	h, b := splitHeadBody(text)
 	if h != "---\nid:  1\n---" {
 		t.Fatalf("Parse headers invalid header = %v", h)
 	}
@@ -43,8 +43,8 @@ func TestParseBlocks(t *testing.T) {
 			t.Fatalf("Len of blocks = %v ; want more than 0", len(blocks))
 		}
 		for lang, code := range fixt.Result {
-			code = strings.Trim(code, BLANKS)
-			bloc := strings.Trim(blocks[lang], BLANKS)
+			code = strings.Trim(code, blankRunes)
+			bloc := strings.Trim(blocks[lang], blankRunes)
 			if bloc != code {
 				t.Fatalf("Resulted block = `%v` invalid ; expected = `%v`", bloc, code)
 			}
