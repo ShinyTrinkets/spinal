@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/ShinyTrinkets/spinal/http"
@@ -14,17 +15,21 @@ import (
 
 const (
 	Name    = "Spinal"
-	Descrip = "🌀  Experimental code runner"
+	Descrip = "c[○┬●]כ"
 )
 
 var (
-	VersionString string // injected by go build
-	BuildTime     string
+	Version    string // injected by go build
+	CommitHash string
+	BuildTime  string
 )
 
 func main() {
 	app := cli.App(Name, Descrip)
-	app.Version("v version", Name+": "+Descrip+"\nVersion: "+VersionString+"\nBuilt: "+BuildTime)
+
+	ver := (Name + " " + Descrip + "\n" + runtime.GOOS + " " + runtime.GOARCH +
+		"\nVersion: " + Version + "\nRevision: " + CommitHash + "\nCompiled: " + BuildTime)
+	app.Version("v version", ver)
 
 	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
 
@@ -39,7 +44,6 @@ func main() {
 	}
 
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
-	app.Command("convert", "Convert all valid files from the specified folder", cmdConvert)
 	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
 	app.Command("up", "Convert all valid files from folder and execute them", cmdRunAll)
 
@@ -68,27 +72,6 @@ func cmdList(cmd *cli.Cmd) {
 				enabled = "❌"
 			}
 			log.Info().Msgf("%s  %s : %d lang", enabled, parsed.Path, len(parsed.Blocks))
-		}
-	}
-}
-
-func cmdConvert(cmd *cli.Cmd) {
-	cmd.Spec = "FOLDER"
-	dir := cmd.StringArg("FOLDER", "", "the folder to convert")
-
-	cmd.Action = func() {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-		// This function will perform all folder checks
-		pairs, err := parser.ConvertFolder(*dir)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Convert failed")
-		}
-		log.Print("=== CONVERT ===")
-
-		for infile, outFiles := range pairs {
-			for _, outFile := range outFiles {
-				log.Info().Msgf("%s ==> %s", infile, outFile)
-			}
 		}
 	}
 }
