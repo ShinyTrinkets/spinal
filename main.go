@@ -36,6 +36,9 @@ func main() {
 	app.Before = func() {
 		zerolog.TimeFieldFormat = ""
 		zerolog.MessageFieldName = "m"
+		// Pretty log enabled
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		// Toggle debug logs
 		if *dbg {
 			zerolog.SetGlobalLevel(zerolog.DebugLevel)
 		} else {
@@ -55,7 +58,6 @@ func cmdList(cmd *cli.Cmd) {
 	dir := cmd.StringArg("FOLDER", "", "the folder to list")
 
 	cmd.Action = func() {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		files, err := parser.ParseFolder(*dir, false)
 		if err != nil {
 			log.Fatal().Err(err).Msg("List failed")
@@ -67,11 +69,15 @@ func cmdList(cmd *cli.Cmd) {
 				// log.Print("Invalid: " + parsed.Path)
 				continue
 			}
-			enabled := "✅"
+			enabled := "●"
 			if !parsed.Enabled {
-				enabled = "❌"
+				enabled = "■"
 			}
-			log.Info().Msgf("%s  %s : %d lang", enabled, parsed.Path, len(parsed.Blocks))
+			var langs []string
+			for lng := range parsed.Blocks {
+				langs = append(langs, lng)
+			}
+			log.Info().Msgf("%s %s ▻ %v", enabled, parsed.Path, langs)
 		}
 	}
 }
