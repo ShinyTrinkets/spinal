@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	validSourceExt = ".md"
-	maxFolderDepth = 3
-	blankRunes     = "\t\n\r "
+	validSourceExt  = ".md"
+	maxSrcScanDepth = 3
+	blankRunes      = "\t\n\r "
 )
 
 type StringToString map[string]string

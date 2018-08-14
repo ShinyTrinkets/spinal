@@ -28,7 +28,7 @@ func main() {
 	app := cli.App(Name, Descrip)
 
 	ver := (Name + " " + Descrip + "\n" + runtime.GOOS + " " + runtime.GOARCH +
-		"\nVersion: " + Version + "\nRevision: " + CommitHash + "\nCompiled: " + BuildTime)
+		"\n\n◇ Version: " + Version + "\n◇ Revision: " + CommitHash + "\n◇ Compiled: " + BuildTime)
 	app.Version("v version", ver)
 
 	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
@@ -66,7 +66,7 @@ func cmdList(cmd *cli.Cmd) {
 
 		for _, parsed := range files {
 			if !parsed.IsValid() {
-				// log.Print("Invalid: " + parsed.Path)
+				log.Print("Invalid file: " + parsed.Path)
 				continue
 			}
 			enabled := "●"
@@ -123,10 +123,11 @@ func cmdRunOne(cmd *cli.Cmd) {
 }
 
 func cmdRunAll(cmd *cli.Cmd) {
-	cmd.Spec = "FOLDER [-n|--http]"
+	cmd.Spec = "FOLDER [-n|--http] [--dry-run]"
 	dir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
 	noHttp := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
 	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
+	dryRun := cmd.BoolOpt("dry-run", false, "convert the folder and simulate running")
 
 	cmd.Action = func() {
 		// This function will perform all folder checks
@@ -136,7 +137,11 @@ func cmdRunAll(cmd *cli.Cmd) {
 		}
 		log.Print("=== RUN ALL ===")
 
+		if *dryRun {
+			*noHttp = true
+		}
 		ovr := overseer.NewOverseer()
+
 		go func() {
 			if *noHttp {
 				log.Info().Msg("HTTP server disabled")
@@ -163,6 +168,10 @@ func cmdRunAll(cmd *cli.Cmd) {
 			}
 		}
 
-		ovr.SuperviseAll()
+		if *dryRun {
+			log.Info().Msg("Simulation over")
+		} else {
+			ovr.SuperviseAll()
+		}
 	}
 }

@@ -54,7 +54,7 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 		return files, errors.New("no such folder: " + dir)
 	}
 
-	filesStr, err := listCodeFiles(dir)
+	filesStr, err := listCodeFiles(dir, 0)
 	if err != nil {
 		return files, err
 	}
@@ -94,8 +94,11 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 // Candidate files should contain fenced code blocks.
 // This list can be used to parse the files,
 // or generate code files from the code blocks.
-func listCodeFiles(folder string) ([]string, error) {
+func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 	fileList := []string{}
+	if (scanDepth < 1) {
+		scanDepth = maxSrcScanDepth
+	}
 
 	// Resolve absolute path
 	absDir, err := filepath.Abs(folder)
@@ -116,7 +119,7 @@ func listCodeFiles(folder string) ([]string, error) {
 		// Code files must have a valid file extension
 		if isFile(path) && filepath.Ext(f.Name()) == validSourceExt {
 			// Count the slashes to estimate folder depth
-			if strings.Count(path[baseLen:], "/") >= maxFolderDepth {
+			if strings.Count(path[baseLen:], "/") >= scanDepth {
 				return nil
 			}
 			// Append the full absolute path
