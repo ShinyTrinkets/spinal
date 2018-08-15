@@ -17,3 +17,11 @@
 
       javascript 2
     py: python block
+
+-
+  text: "``py\nthis is broken\n```\n"
+  result:
+
+-
+  text: "```py\nthis is broken\n``\n"
+  result:

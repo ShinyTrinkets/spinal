@@ -27,7 +27,8 @@ func TestParseHeader(t *testing.T) {
 }
 
 func TestParseBlocks(t *testing.T) {
-	text, err := ioutil.ReadFile("fixtures/parse-blocks.yml")
+	// Testing block extraction
+	text, err := ioutil.ReadFile("testdata/parse-blocks.yml")
 	if err != nil {
 		t.Fatalf("Cannot open YAML fixtures file")
 	}
@@ -39,9 +40,6 @@ func TestParseBlocks(t *testing.T) {
 
 	for _, fixt := range fixtures {
 		blocks := ParseBlocks(fm, fixt.Text)
-		if len(blocks) < 1 {
-			t.Fatalf("Len of blocks = %v ; want more than 0", len(blocks))
-		}
 		for lang, code := range fixt.Result {
 			code = strings.Trim(code, blankRunes)
 			bloc := strings.Trim(blocks[lang], blankRunes)
