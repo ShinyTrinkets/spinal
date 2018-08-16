@@ -2,9 +2,11 @@ package parser
 
 import (
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -14,16 +16,18 @@ type Fixtures struct {
 }
 
 func TestParseHeader(t *testing.T) {
+	assert := assert.New(t)
 	var text string
 	// Without extra spaces
-	text = "---\nid:  1\n---\nblah blah\n\n"
+	text = "---\nid: 1\n---\nblah blah\n\n"
 	h, b := splitHeadBody(text)
-	if h != "---\nid:  1\n---" {
-		t.Fatalf("Parse headers invalid header = %v", h)
-	}
-	if b != "blah blah" {
-		t.Fatalf("Parse headers invalid body = %v", b)
-	}
+	assert.Equal(h, "---\nid: 1\n---", "Parse headers invalid header")
+	assert.Equal(b, "blah blah", "Parse headers invalid body")
+	// With extra spaces
+	text = "---\n\n\nid:    1\n\n---\n\n\nblah blah\n\n"
+	h, b = splitHeadBody(text)
+	assert.Equal(h, "---\n\n\nid:    1\n\n---", "Parse headers invalid header")
+	assert.Equal(b, "blah blah", "Parse headers invalid body")
 }
 
 func TestParseBlocks(t *testing.T) {
@@ -48,4 +52,22 @@ func TestParseBlocks(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestListCodeFiles(t *testing.T) {
+	assert := assert.New(t)
+	// Testing listing code files, depth 1
+	files, err := listCodeFiles("testdata/deep1/", 1)
+	assert.Nil(err, "Cannot list code files")
+	srcFiles, err := filepath.Glob("testdata/deep1/*.md")
+	assert.Nil(err, "Cannot glob code files")
+
+	assert.Equal(len(files), len(srcFiles), "There should be %v code files != %v", len(srcFiles), len(files))
+
+	// Testing depth 2
+	files, err = listCodeFiles("testdata/deep1/", 2)
+	assert.Equal(len(files), len(srcFiles)+1, "There should be %v code files != %v", len(srcFiles)+1, len(files))
+	// Testing depth 3
+	files, err = listCodeFiles("testdata/deep1/", 3)
+	assert.Equal(len(files), len(srcFiles)+2, "There should be %v code files != %v", len(srcFiles)+2, len(files))
 }

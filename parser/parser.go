@@ -96,7 +96,7 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 // or generate code files from the code blocks.
 func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 	fileList := []string{}
-	if (scanDepth < 1) {
+	if scanDepth < 1 {
 		scanDepth = maxSrcScanDepth
 	}
 
@@ -131,7 +131,7 @@ func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 	return fileList, err
 }
 
-// Convert a single text file into 1 or more code files.
+// ConvertFile generates 1 or more code files, from one code file.
 func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	outFiles := StringToString{}
 
