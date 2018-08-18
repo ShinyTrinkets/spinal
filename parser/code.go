@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
 	"text/template"
@@ -59,14 +60,15 @@ func codeGeneratedByMsg(lang string) (str string) {
 
 // This creates a hash-map called `spinal` = {id, db, log, etc}
 // for each language.
-func codeLangHeader(front FrontMatter, lang string) string {
-	tmpl := ""
+func codeLangHeader(front FrontMatter, lang string) (str string) {
+	body, _ := json.MarshalIndent(front, "", "  ")
 	if lang == "js" {
-		tmpl = `const spinal = { id: "{{.Id}}", db: {{.Db}}, log: {{.Log}} }`
+		str = "const spinal = " + string(body)
 	} else if lang == "py" {
-		tmpl = `spinal = { "id": "{{.Id}}", "db": {{.Db}}, "log": {{.Log}} }`
+		str = "true = True; false = False; null = None\n"
+		str += "spinal = " + string(body)
 	}
-	return renderTemplate(tmpl, front)
+	return
 }
 
 // This creates the DB and LOG imports for each language.

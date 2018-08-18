@@ -12,11 +12,14 @@ const (
 
 type StringToString map[string]string
 
+type MetaData interface{}
+
 type FrontMatter struct {
-	Enabled bool   `yaml:"spinal"`
-	Id      string `yaml:"id"`
-	Db      bool   `yaml:"db,omitempty"`
-	Log     bool   `yaml:"log,omitempty"`
+	Enabled bool     `yaml:"spinal" json:"spinal"`
+	Id      string   `yaml:"id"  json:"id"`
+	Db      bool     `yaml:"db,omitempty"  json:"db,omitempty"`
+	Log     bool     `yaml:"log,omitempty" json:"log,omitempty"`
+	Meta    MetaData `yaml:"meta" json:"meta"`
 }
 
 type CodeFile struct {
@@ -27,7 +30,7 @@ type CodeFile struct {
 	Blocks map[string]string
 }
 
-// Minimal validation check for ID and Path
+// IsValid makes a validation check for ID and Path
 func (self *CodeFile) IsValid() bool {
 	if len(self.Path) < 2 {
 		return false

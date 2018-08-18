@@ -150,7 +150,8 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 
 	fName := codFile.Path
 	baseLen := len(fName) - len(filepath.Ext(fName))
-	front := FrontMatter{codFile.Enabled, codFile.Id, codFile.Db, codFile.Log}
+
+	front := FrontMatter{codFile.Enabled, codFile.Id, codFile.Db, codFile.Log, codFile.Meta}
 
 	for lang, code := range codFile.Blocks {
 		outFile := fName[:baseLen] + "." + lang
@@ -193,10 +194,21 @@ func ParseFile(fname string) CodeFile {
 		return parseFile
 	}
 
+	// Unmarshal meta data
+	var meta MetaData
+	if err := yaml.Unmarshal([]byte(h), &meta); err != nil {
+		// YAML parse error => ignore file
+		return parseFile
+	}
+	if meta != nil {
+		fmTags := getTagsByName(fm, "json")
+		fm.Meta = normalizeMapIgnore(meta, fmTags)
+	}
+
 	return CodeFile{fm, fname, ctime, mtime, ParseBlocks(fm, b)}
 }
 
-// splitHeadBody separates a text into front-header and the rest of the text
+// splitHeadBody splits a text into front-header and body-the rest of the text
 func splitHeadBody(text string) (string, string) {
 	re := regexp.MustCompile("(?sU)^---[\n\r]+.+[\n\r]+---[\n\r]")
 	head := strings.TrimRight(re.FindString(text), blankRunes)
