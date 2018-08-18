@@ -92,7 +92,7 @@ func cmdRunOne(cmd *cli.Cmd) {
 		if err != nil {
 			log.Fatal().Err(err).Msg("Run-one failed")
 		}
-		if fi.IsDir() {
+		if m := fi.Mode(); m.IsDir() || !m.IsRegular() || m&400 == 0 {
 			log.Fatal().Msg("The path must be a file")
 		}
 

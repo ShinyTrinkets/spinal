@@ -41,17 +41,12 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	files := []CodeFile{}
 
 	// The path must have a valid name
-	if len(dir) < 2 {
+	if len(dir) == 0 {
 		return files, errors.New("folder name too short: " + dir)
 	}
-	// and must exist locally
-	stat, err := os.Stat(dir)
-	if err != nil {
-		return files, err
-	}
-	// and must be a folder
-	if !stat.IsDir() {
-		return files, errors.New("no such folder: " + dir)
+	// and must be a local folder
+	if !isDir(dir) {
+		return files, errors.New("invalid folder: " + dir)
 	}
 
 	filesStr, err := listCodeFiles(dir, 0)
@@ -180,6 +175,11 @@ func ParseFile(fname string) CodeFile {
 		// os.Stat error => ignore file
 		return parseFile
 	}
+
+	fm := FrontMatter{}
+	blocks := map[string]string{}
+	parseFile = CodeFile{fm, fname, ctime, mtime, blocks}
+
 	text, err := ioutil.ReadFile(fname)
 	if err != nil {
 		// Read file error => ignore file
@@ -187,8 +187,6 @@ func ParseFile(fname string) CodeFile {
 	}
 
 	h, b := splitHeadBody(string(text))
-
-	fm := FrontMatter{}
 	if err := yaml.Unmarshal([]byte(h), &fm); err != nil {
 		// YAML parse error => ignore file
 		return parseFile

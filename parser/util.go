@@ -73,6 +73,18 @@ func isFile(path string) bool {
 	return false
 }
 
+// isDir: helper that returns true if the path is a dir
+func isDir(path string) bool {
+	f, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if m := f.Mode(); m.IsDir() && m&400 != 0 {
+		return true
+	}
+	return false
+}
+
 // fileStats: helper that returns file stats (creation and modif times)
 func fileStats(fname string) (time.Time, time.Time, error) {
 	var c time.Time
