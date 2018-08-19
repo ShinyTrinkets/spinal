@@ -13,8 +13,8 @@ import (
 
 // For readability, higher level functions go first
 
-// ConvertFolder finds all candidate text files from a folder,
-// and generates code files.
+// ConvertFolder finds all candidate code-files from a folder,
+// and generates source code.
 // The original text files are not changed.
 func ConvertFolder(dir string) (map[string]StringToString, error) {
 	result := map[string]StringToString{}
@@ -35,7 +35,7 @@ func ConvertFolder(dir string) (map[string]StringToString, error) {
 	return result, nil
 }
 
-// ParseFolder finds all candidate text files from a folder,
+// ParseFolder finds all candidate code-files from a folder,
 // and extracts useful info about them.
 func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	files := []CodeFile{}
@@ -85,7 +85,7 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	return files, nil
 }
 
-// listCodeFiles returns all candidate text files from a folder.
+// listCodeFiles returns all candidate code-files from a folder.
 // Candidate files should contain fenced code blocks.
 // This list can be used to parse the files,
 // or generate code files from the code blocks.
@@ -162,11 +162,11 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	return outFiles, nil
 }
 
-// Parse a file and return a structure.
+// ParseFile accepts a candidate code-file and returns a structure.
 // The structure contains ID, Path, Creation time and
 // a list of blocks of code.
 // If the file can't be accessed or parsed,
-// the returned structure will be empty and invalid.
+// the returned structure will be incomplete.
 func ParseFile(fname string) CodeFile {
 	parseFile := CodeFile{}
 
@@ -203,7 +203,7 @@ func ParseFile(fname string) CodeFile {
 		fm.Meta = normalizeMapIgnore(meta, fmTags)
 	}
 
-	return CodeFile{fm, fname, ctime, mtime, ParseBlocks(fm, b)}
+	return CodeFile{fm, fname, ctime, mtime, ParseBlocks(b)}
 }
 
 // splitHeadBody splits a text into front-header and body-the rest of the text

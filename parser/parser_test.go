@@ -40,11 +40,9 @@ func TestParseBlocks(t *testing.T) {
 	if err := yaml.Unmarshal(text, &fixtures); err != nil {
 		t.Fatalf("Cannot parse YAML fixtures")
 	}
-	var m interface{}
-	fm := FrontMatter{true, "x", false, true, m}
 
 	for _, fixt := range fixtures {
-		blocks := ParseBlocks(fm, fixt.Text)
+		blocks := ParseBlocks(fixt.Text)
 		for lang, code := range fixt.Result {
 			code = strings.Trim(code, blankRunes)
 			bloc := strings.Trim(blocks[lang], blankRunes)
