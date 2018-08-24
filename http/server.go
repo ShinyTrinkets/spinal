@@ -3,14 +3,16 @@ package http
 import (
 	"net/http"
 
+	"github.com/azer/logger"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/rs/zerolog/log"
 )
 
 // NewServer sets up a new HTTP server
 func NewServer(port string) *echo.Echo {
+	log = logger.New("HttpServer")
+
 	srv := echo.New()
 	srv.Server.Addr = port
 	srv.Pre(middleware.RemoveTrailingSlash())
@@ -24,10 +26,10 @@ func NewServer(port string) *echo.Echo {
 
 // Serve listens and serves
 func Serve(srv *echo.Echo) {
-	log.Info().Msgf("HTTP server start on '%s'", srv.Server.Addr)
+	log.Info("HTTP server start on '%s'", srv.Server.Addr)
 	if err := gracehttp.Serve(srv.Server); err != nil {
-		log.Fatal().Err(err).Msg("HTTP server error")
+		log.Error("HTTP server error: %s", err)
 	} else {
-		log.Info().Msg("HTTP server shutdown")
+		log.Info("HTTP server shutdown")
 	}
 }
