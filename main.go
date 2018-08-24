@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -9,8 +10,6 @@ import (
 	"github.com/ShinyTrinkets/spinal/http"
 	"github.com/ShinyTrinkets/spinal/parser"
 	"github.com/jawher/mow.cli"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -24,6 +23,10 @@ var (
 	BuildTime  string
 )
 
+var (
+	dbg bool
+)
+
 func main() {
 	app := cli.App(Name, Descrip)
 
@@ -31,20 +34,7 @@ func main() {
 		"\n\n◇ Version: " + Version + "\n◇ Revision: " + CommitHash + "\n◇ Compiled: " + BuildTime)
 	app.Version("v version", ver)
 
-	dbg := app.BoolOpt("d debug", false, "Enable debug logs")
-
-	app.Before = func() {
-		zerolog.TimeFieldFormat = ""
-		zerolog.MessageFieldName = "m"
-		// Pretty log enabled
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-		// Toggle debug logs
-		if *dbg {
-			zerolog.SetGlobalLevel(zerolog.DebugLevel)
-		} else {
-			zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		}
-	}
+	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
 
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
@@ -60,13 +50,15 @@ func cmdList(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		files, err := parser.ParseFolder(*dir, false)
 		if err != nil {
-			log.Fatal().Err(err).Msg("List failed")
+			fmt.Printf("List failed. Error: %v\n", err)
+			return
 		}
-		log.Print("=== LIST ===")
 
 		for _, parsed := range files {
 			if !parsed.IsValid() {
-				log.Print("Invalid file: " + parsed.Path)
+				if dbg {
+					fmt.Printf("Invalid file: %s\n", parsed.Path)
+				}
 				continue
 			}
 			enabled := "●"
@@ -77,7 +69,7 @@ func cmdList(cmd *cli.Cmd) {
 			for lng := range parsed.Blocks {
 				langs = append(langs, lng)
 			}
-			log.Info().Msgf("%s %s ▻ %v", enabled, parsed.Path, langs)
+			fmt.Printf("%s %s ▻ %v\n", enabled, parsed.Path, langs)
 		}
 	}
 }
@@ -90,20 +82,22 @@ func cmdRunOne(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		fi, err := os.Stat(*fname)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Run-one failed")
+			fmt.Printf("Run-one failed. Error: %v", err)
+			return
 		}
 		if m := fi.Mode(); m.IsDir() || !m.IsRegular() || m&400 == 0 {
-			log.Fatal().Msg("The path must be a file")
+			fmt.Printf("The path must be a file. Path: %s", *fname)
+			return
 		}
 
 		parseFile := parser.ParseFile(*fname)
 		convFiles, err := parser.ConvertFile(parseFile, *force)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Run-one failed")
+			fmt.Printf("Convert failed. Error: %v", err)
+			return
 		}
-		log.Print("=== RUN-ONE ===")
 		if *force {
-			log.Warn().Msg("Unsafe mode enabled")
+			fmt.Println("Unsafe mode enabled!")
 		}
 
 		ovr := overseer.NewOverseer()
@@ -118,7 +112,9 @@ func cmdRunOne(cmd *cli.Cmd) {
 			// TODO: maybe also DelayStart & RetryTimes?
 		}
 
+		fmt.Println("Starting proc. Press Ctrl+C to stop...")
 		ovr.SuperviseAll()
+		fmt.Println("\nShutdown.")
 	}
 }
 
@@ -133,9 +129,9 @@ func cmdRunAll(cmd *cli.Cmd) {
 		// This function will perform all folder checks
 		pairs, err := parser.ConvertFolder(*dir)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Run-all failed")
+			fmt.Printf("Run-all failed. Error: %v", err)
+			return
 		}
-		log.Print("=== RUN ALL ===")
 
 		if *dryRun {
 			*noHttp = true
@@ -144,7 +140,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 
 		go func() {
 			if *noHttp {
-				log.Info().Msg("HTTP server disabled")
+				fmt.Println("HTTP server disabled")
 				return
 			}
 			// Setup HTTP server
@@ -157,7 +153,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 		baseLen := len(*dir) + 1
 		for infile, convFiles := range pairs {
 			for lang, outFile := range convFiles {
-				log.Info().Msgf("%s ==> %s", infile, outFile)
+				fmt.Printf("%s ==> %s\n", infile, outFile)
 
 				exe := parser.CodeBlocks[lang].Executable
 				env := append(os.Environ(), "SPIN_FILE="+outFile)
@@ -169,9 +165,11 @@ func cmdRunAll(cmd *cli.Cmd) {
 		}
 
 		if *dryRun {
-			log.Info().Msg("Simulation over")
+			fmt.Println("Simulation over.")
 		} else {
+			fmt.Println("Starting procs. Press Ctrl+C to stop...")
 			ovr.SuperviseAll()
+			fmt.Println("\nShutdown.")
 		}
 	}
 }
