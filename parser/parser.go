@@ -40,6 +40,8 @@ func ConvertFolder(dir string) (map[string]StringToString, error) {
 func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	files := []CodeFile{}
 
+	dir = strings.TrimRight(dir, "/")
+
 	// The path must have a valid name
 	if len(dir) == 0 {
 		return files, errors.New("folder name too short: " + dir)

@@ -5,10 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/ShinyTrinkets/spinal/http"
+	"github.com/ShinyTrinkets/spinal/logger"
 	"github.com/ShinyTrinkets/spinal/parser"
+	log "github.com/azer/logger"
 	"github.com/jawher/mow.cli"
 )
 
@@ -35,6 +38,13 @@ func main() {
 	app.Version("v version", ver)
 
 	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
+
+	overseer.SetupLogBuilder(func(name string) overseer.Logger {
+		return log.New(name)
+	})
+	logger.SetupLogBuilder(func(name string) logger.Logger {
+		return log.New(name)
+	})
 
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
@@ -120,14 +130,15 @@ func cmdRunOne(cmd *cli.Cmd) {
 
 func cmdRunAll(cmd *cli.Cmd) {
 	cmd.Spec = "FOLDER [-n|--http] [--dry-run]"
-	dir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
+	rootDir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
 	noHttp := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
 	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
 	dryRun := cmd.BoolOpt("dry-run", false, "convert the folder and simulate running")
 
 	cmd.Action = func() {
+		dir := strings.TrimRight(*rootDir, "/")
 		// This function will perform all folder checks
-		pairs, err := parser.ConvertFolder(*dir)
+		pairs, err := parser.ConvertFolder(dir)
 		if err != nil {
 			fmt.Printf("Run-all failed. Error: %v", err)
 			return
@@ -150,7 +161,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 			http.Serve(srv)
 		}()
 
-		baseLen := len(*dir) + 1
+		baseLen := len(dir) + 1
 		for infile, convFiles := range pairs {
 			for lang, outFile := range convFiles {
 				fmt.Printf("%s ==> %s\n", infile, outFile)
@@ -158,7 +169,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 				exe := parser.CodeBlocks[lang].Executable
 				env := append(os.Environ(), "SPIN_FILE="+outFile)
 				p := ovr.Add(outFile, exe, outFile[baseLen:])
-				p.SetDir(*dir)
+				p.SetDir(dir)
 				p.SetEnv(env)
 				// TODO: maybe also DelayStart & RetryTimes?
 			}
