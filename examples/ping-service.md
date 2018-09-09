@@ -21,7 +21,7 @@ const { portScan } = require('@croqaz/port-scan')
 
 // TODO : Should be using Human expressions here
 // Run heart-beat every 10 seconds
-trigger('timer', '*/10 * * * * *', () => log.info('Heartbeat ♥️'))
+trigger('timer', '*/10 * * * * *', () => log.info('Heartbeat ❤'))
 // Every minute, run actions
 trigger('timer', '0 */1 * * * *', actions)
 

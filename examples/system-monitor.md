@@ -8,10 +8,16 @@ log: true
 
 ```py
 import psutil
+import crython
+from time import sleep
 
-print('System metrics Ⓜ️')
+# Every 10 seconds
+@crython.job(second='*/10')
+def heart_beat():
+  print('Heartbeat ❤')
 
-# Python 3.x compatible
+# At every minute of every hour at second 1
+@crython.job(second=0, minute='*/1')
 def calc_metrics():
   cpu = psutil.cpu_percent(interval=1)
   virt_mem = psutil.virtual_memory()
@@ -23,7 +29,11 @@ def calc_metrics():
   print('Swap MEM:', swap_mem.percent, '%')
   print('Disk usage:', disk.percent, '%')
 
-calc_metrics()
+if __name__ == '__main__':
+  print('System metrics Ⓜ️')
+  crython.start()
+  while True:
+    sleep(1)
 ```
 
 ## Bye-bye metrics Ⓜ️
