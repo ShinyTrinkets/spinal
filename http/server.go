@@ -3,18 +3,18 @@ package http
 import (
 	"net/http"
 
-	"github.com/ShinyTrinkets/spinal/logger"
+	. "github.com/ShinyTrinkets/meta-logger"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 // Global log instance
-var log logger.Logger
+var log Logger
 
 // NewServer sets up a new HTTP server
 func NewServer(port string) *echo.Echo {
-	log = logger.NewLogger("HttpServer")
+	log = NewLogger("HttpServer")
 
 	srv := echo.New()
 	srv.Server.Addr = port

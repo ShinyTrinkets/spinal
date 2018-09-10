@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"strings"
 
+	. "github.com/ShinyTrinkets/meta-logger"
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/ShinyTrinkets/spinal/http"
-	"github.com/ShinyTrinkets/spinal/logger"
 	"github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
 	"github.com/jawher/mow.cli"
@@ -39,10 +39,7 @@ func main() {
 
 	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
 
-	overseer.SetupLogBuilder(func(name string) overseer.Logger {
-		return log.New(name)
-	})
-	logger.SetupLogBuilder(func(name string) logger.Logger {
+	SetupLogBuilder(func(name string) Logger {
 		return log.New(name)
 	})
 
