@@ -79,6 +79,9 @@ func codeLangImports(front FrontMatter, lang string) (str string) {
 			str += ("\n" + logCode(front, lang) + "\n")
 		}
 		str += "const trigger = require('trinkets/triggers');\n"
+	} else if lang == "py" {
+		str = "import functools\n"
+		str += "print = functools.partial(print, flush=True)\n"
 	}
 	return
 }

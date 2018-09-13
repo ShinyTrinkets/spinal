@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/ShinyTrinkets/overseer.go"
 	"github.com/labstack/echo"
@@ -11,11 +12,18 @@ import (
 func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 	// Get proc by ID
 	srv.GET("/proc/:id", func(c echo.Context) error {
-		id := c.Param("id")
-		return c.JSON(http.StatusOK, ovr.ToJSON(id))
+		id, err := url.PathUnescape(c.Param("id"))
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid ID")
+		}
+		if ovr.HasProc(id) {
+			return c.JSON(http.StatusOK, ovr.ToJSON(id))
+		} else {
+			return c.String(http.StatusBadRequest, "Invalid proc")
+		}
 	})
 	// List all procs
-	srv.GET("/proc", func(c echo.Context) error {
+	srv.GET("/procs", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, ovr.ListAll())
 	})
 }

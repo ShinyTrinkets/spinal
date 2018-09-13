@@ -117,11 +117,7 @@ func cmdRunOne(cmd *cli.Cmd) {
 			env := append(os.Environ(), "SPIN_FILE="+outFile)
 
 			var p *overseer.Cmd
-			if exe == "python3" {
-				p = ovr.Add(parseFile.Id, exe, "-u", outFile[baseLen:])
-			} else {
-				p = ovr.Add(parseFile.Id, exe, outFile[baseLen:])
-			}
+			p = ovr.Add(parseFile.Id, exe, outFile[baseLen:])
 			p.SetDir(dir)
 			p.SetEnv(env)
 			// TODO: maybe also DelayStart & RetryTimes?
