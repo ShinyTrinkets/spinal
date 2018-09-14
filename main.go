@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -9,7 +11,7 @@ import (
 
 	. "github.com/ShinyTrinkets/meta-logger"
 	"github.com/ShinyTrinkets/overseer.go"
-	"github.com/ShinyTrinkets/spinal/http"
+	srv "github.com/ShinyTrinkets/spinal/http"
 	"github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
 	"github.com/jawher/mow.cli"
@@ -46,6 +48,7 @@ func main() {
 	app.Command("list", "List all candidate files from the specified folder", cmdList)
 	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
 	app.Command("up", "Convert all valid files from folder and execute them", cmdRunAll)
+	app.Command("check", "Show info about a running Spinal instance", cmdClient)
 
 	app.Run(os.Args)
 }
@@ -78,6 +81,26 @@ func cmdList(cmd *cli.Cmd) {
 			}
 			fmt.Printf("%s %s ▻ %v\n", enabled, parsed.Path, langs)
 		}
+	}
+}
+
+func cmdClient(cmd *cli.Cmd) {
+	cmd.Spec = "[-c]"
+	httpOpts := cmd.StringOpt("c http", "localhost:12323", "HTTP server host:port")
+
+	cmd.Action = func() {
+		resp, err := http.Get("http://" + *httpOpts + "/procs")
+		if err != nil {
+			fmt.Printf("Check connection failed. Error: %v", err)
+			return
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Printf("Check reponse failed. Error: %v", err)
+			return
+		}
+		fmt.Println("Procs: " + string(body))
 	}
 }
 
@@ -156,10 +179,10 @@ func cmdRunAll(cmd *cli.Cmd) {
 				return
 			}
 			// Setup HTTP server
-			srv := http.NewServer(*httpOpts)
+			inst := srv.NewServer(*httpOpts)
 			// Enable Overseer endpoints
-			http.OverseerEndpoint(srv, ovr)
-			http.Serve(srv)
+			srv.OverseerEndpoint(inst, ovr)
+			srv.Serve(inst)
 		}()
 
 		baseLen := len(dir) + 1
