@@ -2,6 +2,7 @@
 id: system-monitor
 spinal: true
 log: true
+db: false
 ---
 
 ## Measure ∡ computer metrics
