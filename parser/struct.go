@@ -15,11 +15,13 @@ type StringToString map[string]string
 type MetaData interface{}
 
 type FrontMatter struct {
-	Enabled bool     `yaml:"spinal" json:"spinal"`
-	Id      string   `yaml:"id"  json:"id"`
-	Db      bool     `yaml:"db,omitempty"  json:"db,omitempty"`
-	Log     bool     `yaml:"log,omitempty" json:"log,omitempty"`
-	Meta    MetaData `yaml:"meta" json:"meta"`
+	Enabled    bool     `yaml:"spinal" json:"spinal"`
+	Id         string   `yaml:"id"  json:"id"`
+	Db         bool     `yaml:"db,omitempty"  json:"db,omitempty"`
+	Log        bool     `yaml:"log,omitempty" json:"log,omitempty"`
+	DelayStart uint     `yaml:"delayStart,omitempty" json:"delayStart,omitempty"`
+	RetryTimes uint     `yaml:"retryTimes,omitempty" json:"retryTimes,omitempty"`
+	Meta       MetaData `yaml:"meta" json:"meta"`
 }
 
 type CodeFile struct {

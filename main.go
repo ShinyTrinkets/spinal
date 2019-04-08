@@ -14,7 +14,7 @@ import (
 	srv "github.com/ShinyTrinkets/spinal/http"
 	"github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
-	"github.com/jawher/mow.cli"
+	cli "github.com/jawher/mow.cli"
 )
 
 const (
@@ -143,7 +143,12 @@ func cmdRunOne(cmd *cli.Cmd) {
 			p = ovr.Add(parseFile.Id, exe, outFile[baseLen:])
 			p.SetDir(dir)
 			p.SetEnv(env)
-			// TODO: maybe also DelayStart & RetryTimes?
+			if parseFile.DelayStart > 0 {
+				p.SetDelayStart(parseFile.DelayStart)
+			}
+			if parseFile.RetryTimes > 0 {
+				p.SetRetryTimes(parseFile.RetryTimes)
+			}
 		}
 
 		fmt.Println("Starting proc. Press Ctrl+C to stop...")
@@ -155,7 +160,7 @@ func cmdRunOne(cmd *cli.Cmd) {
 func cmdRunAll(cmd *cli.Cmd) {
 	cmd.Spec = "FOLDER [-n|--http] [--dry-run]"
 	rootDir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
-	noHttp := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
+	noHTTP := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
 	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
 	dryRun := cmd.BoolOpt("dry-run", false, "convert the folder and simulate running")
 
@@ -169,12 +174,12 @@ func cmdRunAll(cmd *cli.Cmd) {
 		}
 
 		if *dryRun {
-			*noHttp = true
+			*noHTTP = true
 		}
 		ovr := overseer.NewOverseer()
 
 		go func() {
-			if *noHttp {
+			if *noHTTP {
 				fmt.Println("HTTP server disabled")
 				return
 			}

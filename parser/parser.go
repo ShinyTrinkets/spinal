@@ -1,3 +1,8 @@
+//
+// File parser.go contains high level functions for:
+// parsing a source file or a folder with source files,
+// and converting a source file to scripts,
+// or a folder with source files to scripts.
 package parser
 
 import (
@@ -140,7 +145,7 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	if !force && !codFile.Enabled {
 		return outFiles, errors.New("file is marked disabled: " + codFile.Path)
 	}
-	// And must have blocks of code
+	// And must have at least 1 block of code
 	if len(codFile.Blocks) == 0 {
 		return outFiles, errors.New("file has no blocks of code: " + codFile.Path)
 	}
@@ -148,7 +153,11 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	fName := codFile.Path
 	baseLen := len(fName) - len(filepath.Ext(fName))
 
-	front := FrontMatter{codFile.Enabled, codFile.Id, codFile.Db, codFile.Log, codFile.Meta}
+	front := FrontMatter{codFile.Enabled, codFile.Id,
+		codFile.Db, codFile.Log,
+		codFile.DelayStart,
+		codFile.RetryTimes,
+		codFile.Meta}
 
 	for lang, code := range codFile.Blocks {
 		outFile := fName[:baseLen] + "." + lang

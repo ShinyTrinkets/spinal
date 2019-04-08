@@ -1,3 +1,6 @@
+//
+// File code.go contains helpers to parse,
+// or generate code for different languages.
 package parser
 
 import (
