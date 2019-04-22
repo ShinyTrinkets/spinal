@@ -1,12 +1,8 @@
 package parser
 
 import (
-	"os"
 	"reflect"
 	"strings"
-	"time"
-
-	"github.com/immortal/xtime"
 )
 
 func containsListStr(s []string, e string) bool {
@@ -59,42 +55,4 @@ func getTagsByName(obj interface{}, tag string) (tags []string) {
 	}
 
 	return tags
-}
-
-// isFile: helper that returns true if the path is a regular file
-func isFile(path string) bool {
-	f, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	if m := f.Mode(); !m.IsDir() && m.IsRegular() && m&400 != 0 {
-		return true
-	}
-	return false
-}
-
-// isDir: helper that returns true if the path is a dir
-func isDir(path string) bool {
-	f, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	if m := f.Mode(); m.IsDir() && m&400 != 0 {
-		return true
-	}
-	return false
-}
-
-// fileStats: helper that returns file stats (creation and modif times)
-func fileStats(fname string) (time.Time, time.Time, error) {
-	var t time.Time
-
-	fi, err := os.Stat(fname)
-	if err != nil {
-		// File stats error
-		return t, t, err
-	}
-
-	x := xtime.Get(fi)
-	return x.Ctime(), x.Mtime(), nil
 }

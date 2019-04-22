@@ -7,9 +7,9 @@ import (
 	"os"
 	"runtime"
 
-	. "github.com/ShinyTrinkets/meta-logger"
-	"github.com/ShinyTrinkets/spinal/command"
-	"github.com/ShinyTrinkets/spinal/parser"
+	logr "github.com/ShinyTrinkets/meta-logger"
+	do "github.com/ShinyTrinkets/spinal/command"
+	parse "github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
 	cli "github.com/jawher/mow.cli"
 )
@@ -38,14 +38,13 @@ func main() {
 
 	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
 
-	SetupLogBuilder(func(name string) Logger {
+	logr.SetupLogBuilder(func(name string) logr.Logger {
 		return log.New(name)
 	})
 
 	app.Command("list", "List all candidate source-files from folder", cmdList)
-	app.Command("one", "Convert a source-file and execute it", cmdRunOne)
-	app.Command("up", "Convert all source-files from folder and execute them", cmdRunAll)
 	app.Command("check", "Show info about a running Spinal instance", cmdClient)
+	app.Command("up", "Convert all source-files from folder and execute them", cmdSpinUp)
 
 	app.Run(os.Args)
 }
@@ -55,7 +54,7 @@ func cmdList(cmd *cli.Cmd) {
 	dir := cmd.StringArg("FOLDER", "", "the folder to list")
 
 	cmd.Action = func() {
-		files, err := parser.ParseFolder(*dir, false)
+		files, err := parse.ParseFolder(*dir, false)
 		if err != nil {
 			fmt.Printf("List failed. Error: %v\n", err)
 			return
@@ -101,24 +100,15 @@ func cmdClient(cmd *cli.Cmd) {
 	}
 }
 
-func cmdRunOne(cmd *cli.Cmd) {
-	cmd.Spec = "FILE [-f]"
-	fname := cmd.StringArg("FILE", "", "the file to convert and run")
-	force := cmd.BoolOpt("f force", false, "force by ignoring the header")
-
-	cmd.Action = func() {
-		command.RunOne(*fname, *force)
-	}
-}
-
-func cmdRunAll(cmd *cli.Cmd) {
-	cmd.Spec = "FOLDER [-n|--http] [--dry-run]"
+func cmdSpinUp(cmd *cli.Cmd) {
+	cmd.Spec = "FOLDER [-f] [-n|--http] [--dry-run]"
 	rootDir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
+	force := cmd.BoolOpt("f force", false, "force conversion by ignoring the header")
 	noHTTP := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
 	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
-	dryRun := cmd.BoolOpt("dry-run", false, "convert the folder and simulate running")
+	dryRun := cmd.BoolOpt("dry-run", false, "convert the sources and simulate running")
 
 	cmd.Action = func() {
-		command.RunAll(*rootDir, *httpOpts, *noHTTP, *dryRun)
+		do.SpinUp(*rootDir, *force, *httpOpts, *noHTTP, *dryRun)
 	}
 }

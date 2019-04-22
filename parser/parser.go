@@ -13,7 +13,8 @@ import (
 	"regexp"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	util "github.com/ShinyTrinkets/spinal/util"
+	yml "gopkg.in/yaml.v2"
 )
 
 // For readability, higher level functions go first
@@ -22,12 +23,12 @@ import (
 // and generates source code.
 // The original text files are not changed.
 func ConvertFolder(dir string) (map[string]StringToString, map[string]CodeFile, error) {
-	result := map[string]StringToString{}
+	pairs := map[string]StringToString{}
 	okFiles := map[string]CodeFile{}
 
 	files, err := ParseFolder(dir, true)
 	if err != nil {
-		return result, okFiles, err
+		return pairs, okFiles, err
 	}
 
 	for _, p := range files {
@@ -36,10 +37,10 @@ func ConvertFolder(dir string) (map[string]StringToString, map[string]CodeFile, 
 			// What should this do if the file cannot be converted ?
 			continue // => silently ignore ?
 		}
-		result[p.Path] = outFiles
+		pairs[p.Path] = outFiles
 		okFiles[p.Path] = p
 	}
-	return result, okFiles, nil
+	return pairs, okFiles, nil
 }
 
 // ParseFolder finds all candidate code-files from a folder,
@@ -53,10 +54,10 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	if len(dir) == 0 {
 		return files, errors.New("null folder name: " + dir)
 	}
-	// and must be a local folder
-	if !isDir(dir) {
-		return files, errors.New("invalid folder: " + dir)
-	}
+	// // and must be a local folder
+	// if !util.IsDir(dir) {
+	// 	return files, errors.New("invalid folder: " + dir)
+	// }
 
 	filesStr, err := listCodeFiles(dir, 0)
 	if err != nil {
@@ -122,7 +123,7 @@ func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 			return err
 		}
 		// Code files must have a valid file extension
-		if isFile(path) && filepath.Ext(f.Name()) == validSourceExt {
+		if util.IsFile(path) && filepath.Ext(f.Name()) == validSourceExt {
 			// Count the slashes to estimate folder depth
 			if strings.Count(path[baseLen:], "/") >= scanDepth {
 				return nil
@@ -139,22 +140,20 @@ func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 // ConvertFile generates 1 or more code files, from one code file.
 func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	outFiles := StringToString{}
+	fName := codFile.Path
 
 	// Some logic to decide if the structure is valid
 	if !force && !codFile.IsValid() {
-		return outFiles, errors.New("file header is invalid: " + codFile.Path)
+		return outFiles, errors.New("file header is invalid: " + fName)
 	}
 	// The code file must be enabled
 	if !force && !codFile.Enabled {
-		return outFiles, errors.New("file is marked disabled: " + codFile.Path)
+		return outFiles, errors.New("file is marked disabled: " + fName)
 	}
 	// And must have at least 1 block of code
 	if len(codFile.Blocks) == 0 {
-		return outFiles, errors.New("file has no blocks of code: " + codFile.Path)
+		return outFiles, errors.New("file has no blocks of code: " + fName)
 	}
-
-	fName := codFile.Path
-	baseLen := len(fName) - len(filepath.Ext(fName))
 
 	front := FrontMatter{codFile.Enabled, codFile.Id,
 		codFile.Db, codFile.Log,
@@ -162,8 +161,15 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 		codFile.RetryTimes,
 		codFile.Meta}
 
+	baseLen := len(fName) - len(filepath.Ext(fName))
+
 	for lang, code := range codFile.Blocks {
 		outFile := fName[:baseLen] + "." + lang
+		if fName == outFile {
+			// Overwrite the source file ?!
+			// This should never happen
+			continue
+		}
 		code = codeGeneratedByMsg(lang) + "\n\n" +
 			codeLangHeader(front, lang) + "\n" +
 			codeLangImports(front, lang) + "\n" + code
@@ -184,7 +190,7 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 func ParseFile(fname string) CodeFile {
 	parseFile := CodeFile{}
 
-	ctime, mtime, err := fileStats(fname)
+	ctime, mtime, err := util.FileStats(fname)
 	if err != nil {
 		// os.Stat error => ignore file
 		return parseFile
@@ -201,14 +207,14 @@ func ParseFile(fname string) CodeFile {
 	}
 
 	h, b := splitHeadBody(string(text))
-	if err := yaml.Unmarshal([]byte(h), &fm); err != nil {
+	if err := yml.Unmarshal([]byte(h), &fm); err != nil {
 		// YAML parse error => ignore file
 		return parseFile
 	}
 
 	// Unmarshal meta data
 	var meta MetaData
-	if err := yaml.Unmarshal([]byte(h), &meta); err != nil {
+	if err := yml.Unmarshal([]byte(h), &meta); err != nil {
 		// YAML parse error => ignore file
 		return parseFile
 	}
