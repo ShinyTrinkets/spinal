@@ -5,13 +5,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
-	"strings"
 
 	. "github.com/ShinyTrinkets/meta-logger"
-	"github.com/ShinyTrinkets/overseer.go"
-	srv "github.com/ShinyTrinkets/spinal/http"
+	"github.com/ShinyTrinkets/spinal/command"
 	"github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
 	cli "github.com/jawher/mow.cli"
@@ -45,9 +42,9 @@ func main() {
 		return log.New(name)
 	})
 
-	app.Command("list", "List all candidate files from the specified folder", cmdList)
-	app.Command("one", "Generate code from a valid file and execute it", cmdRunOne)
-	app.Command("up", "Convert all valid files from folder and execute them", cmdRunAll)
+	app.Command("list", "List all candidate source-files from folder", cmdList)
+	app.Command("one", "Convert a source-file and execute it", cmdRunOne)
+	app.Command("up", "Convert all source-files from folder and execute them", cmdRunAll)
 	app.Command("check", "Show info about a running Spinal instance", cmdClient)
 
 	app.Run(os.Args)
@@ -91,13 +88,13 @@ func cmdClient(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		resp, err := http.Get("http://" + *httpOpts + "/procs")
 		if err != nil {
-			fmt.Printf("Check connection failed. Error: %v", err)
+			fmt.Printf("Failed Spinal connection. Error: %v", err)
 			return
 		}
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("Check reponse failed. Error: %v", err)
+			fmt.Printf("Failed Spinal reponse. Error: %v", err)
 			return
 		}
 		fmt.Println("Procs: " + string(body))
@@ -110,52 +107,7 @@ func cmdRunOne(cmd *cli.Cmd) {
 	force := cmd.BoolOpt("f force", false, "force by ignoring the header")
 
 	cmd.Action = func() {
-		fi, err := os.Stat(*fname)
-		if err != nil {
-			fmt.Printf("Run-one failed. Error: %v", err)
-			return
-		}
-		if m := fi.Mode(); m.IsDir() || !m.IsRegular() || m&400 == 0 {
-			fmt.Printf("The path must be a file. Path: %s", *fname)
-			return
-		}
-
-		parseFile := parser.ParseFile(*fname)
-		convFiles, err := parser.ConvertFile(parseFile, *force)
-		if err != nil {
-			fmt.Printf("Convert failed. Error: %v", err)
-			return
-		}
-		if *force {
-			fmt.Println("Unsafe mode enabled!")
-		}
-
-		ovr := overseer.NewOverseer()
-
-		dir := filepath.Dir(*fname)
-		baseLen := len(dir) + 1
-
-		for lang, outFile := range convFiles {
-			exe := parser.CodeBlocks[lang].Executable
-			env := append(os.Environ(), "SPIN_FILE="+outFile)
-
-			p := ovr.Add(parseFile.Id, exe, outFile[baseLen:])
-			// p.SetStateListener(func(state overseer.CmdState) {
-			// 	fmt.Println("Proc State Changed:", state)
-			// })
-			p.SetDir(dir)
-			p.SetEnv(env)
-			if parseFile.DelayStart > 0 {
-				p.SetDelayStart(parseFile.DelayStart)
-			}
-			if parseFile.RetryTimes > 0 {
-				p.SetRetryTimes(parseFile.RetryTimes)
-			}
-		}
-
-		fmt.Println("Starting proc. Press Ctrl+C to stop...")
-		ovr.SuperviseAll()
-		fmt.Println("\nShutdown.")
+		command.RunOne(*fname, *force)
 	}
 }
 
@@ -167,58 +119,6 @@ func cmdRunAll(cmd *cli.Cmd) {
 	dryRun := cmd.BoolOpt("dry-run", false, "convert the folder and simulate running")
 
 	cmd.Action = func() {
-		dir := strings.TrimRight(*rootDir, "/")
-		// This function will perform all folder checks
-		pairs, parsed, err := parser.ConvertFolder(dir)
-		if err != nil {
-			fmt.Printf("Run-all failed. Error: %v", err)
-			return
-		}
-
-		if *dryRun {
-			*noHTTP = true
-		}
-		ovr := overseer.NewOverseer()
-
-		go func() {
-			if *noHTTP {
-				fmt.Println("HTTP server disabled")
-				return
-			}
-			// Setup HTTP server
-			inst := srv.NewServer(*httpOpts)
-			// Enable Overseer endpoints
-			srv.OverseerEndpoint(inst, ovr)
-			srv.Serve(inst)
-		}()
-
-		baseLen := len(dir) + 1
-		for infile, convFiles := range pairs {
-			for lang, outFile := range convFiles {
-				fmt.Printf("%s ==> %s\n", infile, outFile)
-
-				exe := parser.CodeBlocks[lang].Executable
-				env := append(os.Environ(), "SPIN_FILE="+outFile)
-				p := ovr.Add(outFile, exe, outFile[baseLen:])
-				p.SetDir(dir)
-				p.SetEnv(env)
-
-				parseFile := parsed[infile]
-				if parseFile.DelayStart > 0 {
-					p.SetDelayStart(parseFile.DelayStart)
-				}
-				if parseFile.RetryTimes > 0 {
-					p.SetRetryTimes(parseFile.RetryTimes)
-				}
-			}
-		}
-
-		if *dryRun {
-			fmt.Println("Simulation over.")
-		} else {
-			fmt.Println("Starting procs. Press Ctrl+C to stop...")
-			ovr.SuperviseAll()
-			fmt.Println("\nShutdown.")
-		}
+		command.RunAll(*rootDir, *httpOpts, *noHTTP, *dryRun)
 	}
 }

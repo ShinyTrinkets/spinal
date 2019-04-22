@@ -87,16 +87,14 @@ func isDir(path string) bool {
 
 // fileStats: helper that returns file stats (creation and modif times)
 func fileStats(fname string) (time.Time, time.Time, error) {
-	var c time.Time
-	var m time.Time
+	var t time.Time
 
 	fi, err := os.Stat(fname)
 	if err != nil {
 		// File stats error
-		return c, m, err
+		return t, t, err
 	}
 
-	c = xtime.Get(fi).Ctime()
-	m = xtime.Get(fi).Mtime()
-	return c, m, nil
+	x := xtime.Get(fi)
+	return x.Ctime(), x.Mtime(), nil
 }
