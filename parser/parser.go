@@ -21,12 +21,13 @@ import (
 // ConvertFolder finds all candidate code-files from a folder,
 // and generates source code.
 // The original text files are not changed.
-func ConvertFolder(dir string) (map[string]StringToString, error) {
+func ConvertFolder(dir string) (map[string]StringToString, map[string]CodeFile, error) {
 	result := map[string]StringToString{}
+	okFiles := map[string]CodeFile{}
 
 	files, err := ParseFolder(dir, true)
 	if err != nil {
-		return result, err
+		return result, okFiles, err
 	}
 
 	for _, p := range files {
@@ -36,8 +37,9 @@ func ConvertFolder(dir string) (map[string]StringToString, error) {
 			continue // => silently ignore ?
 		}
 		result[p.Path] = outFiles
+		okFiles[p.Path] = p
 	}
-	return result, nil
+	return result, okFiles, nil
 }
 
 // ParseFolder finds all candidate code-files from a folder,
@@ -49,7 +51,7 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 
 	// The path must have a valid name
 	if len(dir) == 0 {
-		return files, errors.New("folder name too short: " + dir)
+		return files, errors.New("null folder name: " + dir)
 	}
 	// and must be a local folder
 	if !isDir(dir) {
@@ -84,7 +86,8 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 		if strings.Index(p.Path, cwd) == 0 {
 			p.Path, err = filepath.Rel(cwd, p.Path)
 			if err != nil {
-				continue
+				// Error if target path can't be made relative to basepath
+				continue // => safe to ignore
 			}
 		}
 		files = append(files, p)

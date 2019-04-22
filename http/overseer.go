@@ -11,6 +11,7 @@ import (
 // OverseerEndpoint enables Overseer endpoints
 func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 	// Get proc by ID
+	// URL encoded characters in the ID are supported ("/" = "%2F")
 	srv.GET("/proc/:id", func(c echo.Context) error {
 		id, err := url.PathUnescape(c.Param("id"))
 		if err != nil {

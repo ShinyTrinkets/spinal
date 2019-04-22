@@ -139,8 +139,10 @@ func cmdRunOne(cmd *cli.Cmd) {
 			exe := parser.CodeBlocks[lang].Executable
 			env := append(os.Environ(), "SPIN_FILE="+outFile)
 
-			var p *overseer.Cmd
-			p = ovr.Add(parseFile.Id, exe, outFile[baseLen:])
+			p := ovr.Add(parseFile.Id, exe, outFile[baseLen:])
+			// p.SetStateListener(func(state overseer.CmdState) {
+			// 	fmt.Println("Proc State Changed:", state)
+			// })
 			p.SetDir(dir)
 			p.SetEnv(env)
 			if parseFile.DelayStart > 0 {
@@ -167,7 +169,7 @@ func cmdRunAll(cmd *cli.Cmd) {
 	cmd.Action = func() {
 		dir := strings.TrimRight(*rootDir, "/")
 		// This function will perform all folder checks
-		pairs, err := parser.ConvertFolder(dir)
+		pairs, parsed, err := parser.ConvertFolder(dir)
 		if err != nil {
 			fmt.Printf("Run-all failed. Error: %v", err)
 			return
@@ -200,7 +202,14 @@ func cmdRunAll(cmd *cli.Cmd) {
 				p := ovr.Add(outFile, exe, outFile[baseLen:])
 				p.SetDir(dir)
 				p.SetEnv(env)
-				// TODO: maybe also DelayStart & RetryTimes?
+
+				parseFile := parsed[infile]
+				if parseFile.DelayStart > 0 {
+					p.SetDelayStart(parseFile.DelayStart)
+				}
+				if parseFile.RetryTimes > 0 {
+					p.SetRetryTimes(parseFile.RetryTimes)
+				}
 			}
 		}
 
