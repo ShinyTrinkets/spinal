@@ -3,10 +3,18 @@ package http
 import (
 	"net/http"
 
-	. "github.com/ShinyTrinkets/meta-logger"
+	logr "github.com/ShinyTrinkets/meta-logger"
+	"github.com/ShinyTrinkets/spinal/state"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+)
+
+type (
+	// Logger is a type alias
+	Logger = logr.Logger
+	// DefaultLogger is a type alias
+	DefaultLogger = logr.DefaultLogger
 )
 
 // Global log instance
@@ -14,7 +22,14 @@ var log Logger
 
 // NewServer sets up a new HTTP server
 func NewServer(port string) *echo.Echo {
-	log = NewLogger("HttpServer")
+	if logr.NewLogger == nil {
+		// When the logger is not defined, use the basic logger
+		logr.NewLogger = func(name string) Logger {
+			return &DefaultLogger{Name: name}
+		}
+	}
+	// Setup the logs by calling user's provided log builder
+	log = logr.NewLogger("HttpServer")
 
 	srv := echo.New()
 	srv.Server.Addr = port
@@ -22,6 +37,10 @@ func NewServer(port string) *echo.Echo {
 
 	srv.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "There's nothing here, stranger")
+	})
+	// Get app state
+	srv.GET("/state", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, state.GetState())
 	})
 
 	return srv

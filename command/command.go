@@ -9,6 +9,7 @@ import (
 	ovr "github.com/ShinyTrinkets/overseer.go"
 	srv "github.com/ShinyTrinkets/spinal/http"
 	parse "github.com/ShinyTrinkets/spinal/parser"
+	"github.com/ShinyTrinkets/spinal/state"
 )
 
 type (
@@ -78,9 +79,22 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 	o := ovr.NewOverseer()
 
 	baseLen := len(dir) + 1
-	for infile, convFiles := range pairs {
+	for inFile, convFiles := range pairs {
+		codeFile := parsed[inFile]
+		// Update state LVL 1
+		state.SetLevel1(inFile,
+			state.Header1{
+				Enabled: codeFile.Enabled,
+				ID:      codeFile.ID,
+				Db:      codeFile.Db,
+				Log:     codeFile.Log,
+				Path:    codeFile.Path,
+				Ctime:   codeFile.Ctime,
+				Mtime:   codeFile.Mtime,
+			})
+
 		for lang, outFile := range convFiles {
-			fmt.Printf("%s ==> %s\n", infile, outFile)
+			fmt.Printf("%s ==> %s\n", inFile, outFile)
 			if dryRun {
 				continue
 			}
@@ -91,13 +105,16 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			p.SetDir(dir)
 			p.SetEnv(env)
 
-			parseFile := parsed[infile]
-			if parseFile.DelayStart > 0 {
-				p.SetDelayStart(parseFile.DelayStart)
+			p.Lock()
+			if codeFile.DelayStart > 0 {
+				p.DelayStart = codeFile.DelayStart
 			}
-			if parseFile.RetryTimes > 0 {
-				p.SetRetryTimes(parseFile.RetryTimes)
+			if codeFile.RetryTimes > 0 {
+				p.RetryTimes = codeFile.RetryTimes
 			}
+			p.Unlock()
+			// Update state LVL 2
+			state.SetLevel2(inFile, outFile, p.ToJSON())
 		}
 	}
 

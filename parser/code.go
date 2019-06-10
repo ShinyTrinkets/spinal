@@ -94,7 +94,7 @@ func dbCode(front FrontMatter, lang string) (str string) {
 	if lang == "js" {
 		str = `let FileSync = require('lowdb/adapters/FileSync')
 fse.ensureDirSync('dbs/')
-const db = require('lowdb')(new FileSync('dbs/{{.Id}}.json'));`
+const db = require('lowdb')(new FileSync('dbs/{{.ID}}.json'));`
 	}
 	return renderTemplate(str, front)
 }
@@ -106,7 +106,7 @@ func logCode(front FrontMatter, lang string) (str string) {
 fse.ensureDirSync('logs/')
 const log = pinoStream({
   base: null,
-  streams: [{ stream: require('fs').createWriteStream('logs/{{.Id}}.log') }]
+  streams: [{ stream: require('fs').createWriteStream('logs/{{.ID}}.log') }]
 });`
 	}
 	return renderTemplate(str, front)
@@ -115,7 +115,7 @@ const log = pinoStream({
 // Helper function to renter a template from a string,
 // using the FrontMatter struct.
 func renderTemplate(str string, front FrontMatter) string {
-	tmpl, err := template.New(front.Id).Parse(str)
+	tmpl, err := template.New(front.ID).Parse(str)
 	if err != nil {
 		panic(err)
 	}

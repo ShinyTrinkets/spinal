@@ -54,13 +54,10 @@ func ParseFolder(dir string, checkInvalid bool) ([]CodeFile, error) {
 	if len(dir) == 0 {
 		return files, errors.New("null folder name: " + dir)
 	}
-	// // and must be a local folder
-	// if !util.IsDir(dir) {
-	// 	return files, errors.New("invalid folder: " + dir)
-	// }
 
 	filesStr, err := listCodeFiles(dir, 0)
 	if err != nil {
+		// Maybe abs path, or sym links, or permissions are wrong
 		return files, err
 	}
 	if len(filesStr) < 1 {
@@ -155,7 +152,7 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 		return outFiles, errors.New("file has no blocks of code: " + fName)
 	}
 
-	front := FrontMatter{codFile.Enabled, codFile.Id,
+	front := FrontMatter{codFile.Enabled, codFile.ID,
 		codFile.Db, codFile.Log,
 		codFile.DelayStart,
 		codFile.RetryTimes,

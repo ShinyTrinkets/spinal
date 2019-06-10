@@ -10,13 +10,15 @@ const (
 	blankRunes      = "\t\n\r "
 )
 
+// StringToString is a helper map
 type StringToString map[string]string
 
+// MetaData is a general object
 type MetaData interface{}
 
 type FrontMatter struct {
 	Enabled    bool     `yaml:"spinal" json:"spinal"`
-	Id         string   `yaml:"id"  json:"id"`
+	ID         string   `yaml:"id"  json:"id"`
 	Db         bool     `yaml:"db,omitempty"  json:"db,omitempty"`
 	Log        bool     `yaml:"log,omitempty" json:"log,omitempty"`
 	DelayStart uint     `yaml:"delayStart,omitempty" json:"delayStart,omitempty"`
@@ -37,7 +39,7 @@ func (self *CodeFile) IsValid() bool {
 	if len(self.Path) < 2 {
 		return false
 	}
-	l := len(self.Id)
+	l := len(self.ID)
 	return (l > 0 && l < 100)
 }
 
