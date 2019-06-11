@@ -40,6 +40,17 @@ func GetState() stateTree {
 	return state
 }
 
+// HasLevel1 checks for a lvl1 name
+func HasLevel1(name string) (exists bool) {
+	_, exists = state[name]
+	return
+}
+
+// GetLevel1 returns a lvl1 state
+func GetLevel1(name string) Level1 {
+	return state[name]
+}
+
 // SetLevel1 updates the StateTree
 func SetLevel1(name string, props *Header1) {
 	children := map[string]Level2{}

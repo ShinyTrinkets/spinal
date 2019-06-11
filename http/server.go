@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"net/url"
 
 	logr "github.com/ShinyTrinkets/meta-logger"
 	"github.com/ShinyTrinkets/spinal/state"
@@ -37,6 +38,19 @@ func NewServer(port string) *echo.Echo {
 
 	srv.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "There's nothing here, stranger")
+	})
+
+	// Get state lvl1 by ID
+	// URL encoded characters in the ID are supported ("/" = "%2F")
+	srv.GET("/state/:id", func(c echo.Context) error {
+		id, err := url.PathUnescape(c.Param("id"))
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid ID format")
+		}
+		if state.HasLevel1(id) {
+			return c.JSON(http.StatusOK, state.GetLevel1(id))
+		}
+		return c.String(http.StatusBadRequest, "Invalid state ID")
 	})
 	// Get app state
 	srv.GET("/state", func(c echo.Context) error {

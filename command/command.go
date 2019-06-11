@@ -100,9 +100,11 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			}
 
 			exe := parse.CodeBlocks[lang].Executable
-			env := append(os.Environ(), "SPIN_FILE="+outFile)
+			// Register the process with Overseer
 			p := o.Add(outFile, exe, outFile[baseLen:])
 			p.SetDir(dir)
+
+			env := append(os.Environ(), "SPIN_FILE="+outFile)
 			p.SetEnv(env)
 
 			p.Lock()
@@ -131,7 +133,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		}
 		// Setup HTTP server
 		http := srv.NewServer(httpOpts)
-		// Enable Overseer endpoints
+		// Activate Overseer endpoints
 		srv.OverseerEndpoint(http, o)
 		srv.Serve(http)
 	}()

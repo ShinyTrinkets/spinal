@@ -15,13 +15,12 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 	srv.GET("/proc/:id", func(c echo.Context) error {
 		id, err := url.PathUnescape(c.Param("id"))
 		if err != nil {
-			return c.String(http.StatusBadRequest, "Invalid ID")
+			return c.String(http.StatusBadRequest, "Invalid ID format")
 		}
 		if ovr.HasProc(id) {
 			return c.JSON(http.StatusOK, ovr.ToJSON(id))
-		} else {
-			return c.String(http.StatusBadRequest, "Invalid proc")
 		}
+		return c.String(http.StatusBadRequest, "Invalid proc ID")
 	})
 	// List all procs
 	srv.GET("/procs", func(c echo.Context) error {
