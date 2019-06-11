@@ -1,14 +1,12 @@
 package state
 
 import (
-	"fmt"
 	"time"
 
 	ovr "github.com/ShinyTrinkets/overseer.go"
 )
 
-// State is
-type State = map[string]Level1
+type stateTree = map[string]Level1
 
 // Level1 is ...
 type Level1 struct {
@@ -16,9 +14,9 @@ type Level1 struct {
 	Children map[string]Level2 `json:"children"`
 }
 
-// Header1 is ...
+// Header1 represents Level1 properties
 type Header1 struct {
-	Enabled bool      `json:"spinal"`
+	Enabled bool      `json:"enabled"`
 	ID      string    `json:"id"`
 	Db      bool      `json:"db,omitempty"`
 	Log     bool      `json:"log,omitempty"`
@@ -32,27 +30,23 @@ type Level2 struct {
 	Props Header2 `json:"props"`
 }
 
-// Header2 is ...
+// Header2 represents Level2 properties
 type Header2 = ovr.JSONProcess
 
-var state = State{}
+var state = stateTree{}
 
 // GetState returns a copy of the state
-func GetState() State {
+func GetState() stateTree {
 	return state
 }
 
-// SetLevel1 is ...
-func SetLevel1(name string, props Header1) {
+// SetLevel1 updates the StateTree
+func SetLevel1(name string, props *Header1) {
 	children := map[string]Level2{}
-	state[name] = Level1{props, children}
-	fmt.Println(state[name])
-	fmt.Println("====")
+	state[name] = Level1{*props, children}
 }
 
-// SetLevel2 is ...
-func SetLevel2(name1 string, name2 string, props Header2) {
-	state[name1].Children[name2] = Level2{props}
-	fmt.Println(state[name1].Children[name2])
-	fmt.Println("====")
+// SetLevel2 updates the StateTree
+func SetLevel2(name1 string, name2 string, props *Header2) {
+	state[name1].Children[name2] = Level2{*props}
 }

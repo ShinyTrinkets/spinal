@@ -83,7 +83,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		codeFile := parsed[inFile]
 		// Update state LVL 1
 		state.SetLevel1(inFile,
-			state.Header1{
+			&state.Header1{
 				Enabled: codeFile.Enabled,
 				ID:      codeFile.ID,
 				Db:      codeFile.Db,
@@ -114,7 +114,8 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			}
 			p.Unlock()
 			// Update state LVL 2
-			state.SetLevel2(inFile, outFile, p.ToJSON())
+			props2 := p.ToJSON()
+			state.SetLevel2(inFile, outFile, &props2)
 		}
 	}
 
