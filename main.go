@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime"
 
-	logr "github.com/ShinyTrinkets/meta-logger"
+	ml "github.com/ShinyTrinkets/meta-logger"
 	do "github.com/ShinyTrinkets/spinal/command"
 	parse "github.com/ShinyTrinkets/spinal/parser"
 	log "github.com/azer/logger"
@@ -30,6 +30,10 @@ var (
 )
 
 func main() {
+	ml.SetupLogBuilder(func(name string) ml.Logger {
+		return log.New(name)
+	})
+
 	app := cli.App(Name, Descrip)
 
 	ver := (Name + " " + Descrip + "\n" + runtime.GOOS + " " + runtime.GOARCH +
@@ -37,10 +41,6 @@ func main() {
 	app.Version("v version", ver)
 
 	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
-
-	logr.SetupLogBuilder(func(name string) logr.Logger {
-		return log.New(name)
-	})
 
 	app.Command("list", "List all candidate source-files from folder", cmdList)
 	app.Command("check", "Show info about a running Spinal instance", cmdClient)

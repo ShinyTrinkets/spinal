@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	ovr "github.com/ShinyTrinkets/overseer.go"
+	ovr "github.com/ShinyTrinkets/overseer"
 	srv "github.com/ShinyTrinkets/spinal/http"
 	parse "github.com/ShinyTrinkets/spinal/parser"
 	"github.com/ShinyTrinkets/spinal/state"
@@ -81,7 +81,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 	baseLen := len(dir) + 1
 	for inFile, convFiles := range pairs {
 		codeFile := parsed[inFile]
-		// Update state LVL 1
+		// Update StateTree LVL 1
 		state.SetLevel1(inFile,
 			&state.Header1{
 				Enabled: codeFile.Enabled,
@@ -100,24 +100,20 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			}
 
 			exe := parse.CodeBlocks[lang].Executable
-			// Register the process with Overseer
-			p := o.Add(outFile, exe, outFile[baseLen:])
-			p.SetDir(dir)
-
 			env := append(os.Environ(), "SPIN_FILE="+outFile)
-			p.SetEnv(env)
-
-			p.Lock()
+			opts := overseer.Options{
+				Buffered: false, Streaming: true,
+				Group: inFile, Dir: dir, Env: env,
+			}
 			if codeFile.DelayStart > 0 {
-				p.DelayStart = codeFile.DelayStart
+				opts.DelayStart = codeFile.DelayStart
 			}
 			if codeFile.RetryTimes > 0 {
-				p.RetryTimes = codeFile.RetryTimes
+				opts.RetryTimes = codeFile.RetryTimes
 			}
-			p.Unlock()
-			// Update state LVL 2
-			props2 := p.ToJSON()
-			state.SetLevel2(inFile, outFile, &props2)
+
+			// Register the process with Overseer
+			o.Add(outFile, exe, outFile[baseLen:], opts)
 		}
 	}
 
@@ -125,6 +121,19 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		fmt.Println("\nSimulation over.")
 		return
 	}
+
+	// Subscribe to state changes, for updating StateTree LVL 2
+	ch := make(chan *ovr.ProcessJSON)
+	o.Watch(ch)
+
+	go func() {
+		for s := range ch {
+			inFile := s.Group
+			outFile := s.ID
+			fmt.Printf("> STATE CHANGED %s ==> %s\n", inFile, outFile)
+			state.SetLevel2(inFile, outFile, s)
+		}
+	}()
 
 	go func() {
 		if noHTTP || len(httpOpts) == 0 {

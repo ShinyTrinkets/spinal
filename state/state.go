@@ -3,7 +3,7 @@ package state
 import (
 	"time"
 
-	ovr "github.com/ShinyTrinkets/overseer.go"
+	ovr "github.com/ShinyTrinkets/overseer"
 )
 
 type stateTree = map[string]Level1
@@ -31,7 +31,7 @@ type Level2 struct {
 }
 
 // Header2 represents Level2 properties
-type Header2 = ovr.JSONProcess
+type Header2 = ovr.ProcessJSON
 
 var state = stateTree{}
 

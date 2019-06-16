@@ -1,6 +1,4 @@
 
-PACKAGE := github.com/ShinyTrinkets/spinal
-
 VERSION_VAR := main.Version
 VERSION_VALUE ?= $(shell cat VERSION.txt)
 REVISION_VAR := main.CommitHash
@@ -13,29 +11,27 @@ GOBUILD_LDFLAGS ?= \
 	-X '$(REVISION_VAR)=$(REVISION_VALUE)' \
 	-X '$(BUILT_VAR)=$(BUILT_VALUE)'
 
+export GO111MODULE=on
+
 # Option for version bump
 BUMP ?= patch
 
-.PHONY: test clean deps build release version
+.PHONY: test clean build release version
 
 test:
-	go vet -v ./parser && go test -v ./parser
-	go vet -v ./http && go test -v ./http
+	go test -v ./parser
+	go test -v ./http
 
-deps:
-	go get -x -ldflags "$(GOBUILD_LDFLAGS)"
-	go get -t -x -ldflags "$(GOBUILD_LDFLAGS)"
+build:
+	go build -o spin -x -ldflags "$(GOBUILD_LDFLAGS)"
+	mv spin $(GOPATH)/bin/spin
 
-build: deps
-	go install -x -ldflags "$(GOBUILD_LDFLAGS)"
-	mv $(GOPATH)/bin/spinal $(GOPATH)/bin/spin
-
-release: deps
-	GOOS=darwin GOARCH=amd64 go build -o spin-darwin -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
-	GOOS=linux GOARCH=amd64 go build -o spin-linux -ldflags "-s -w $(GOBUILD_LDFLAGS)" $(PACKAGE)
+release:
+	GOOS=darwin GOARCH=amd64 go build -o spin-darwin -ldflags "-s -w $(GOBUILD_LDFLAGS)"
+	GOOS=linux GOARCH=amd64 go build -o spin-linux -ldflags "-s -w $(GOBUILD_LDFLAGS)"
 
 version:
 	python version_bump.py `cat VERSION.txt` --$(BUMP) > VERSION.txt
 
 clean:
-	go clean -x -i ./...
+	go clean -x -i -cache -testcache ./...

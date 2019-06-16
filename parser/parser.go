@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	util "github.com/ShinyTrinkets/spinal/util"
-	yml "gopkg.in/yaml.v2"
+	yml "gopkg.in/yaml.v3"
 )
 
 // For readability, higher level functions go first

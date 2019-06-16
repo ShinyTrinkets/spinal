@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ShinyTrinkets/overseer.go"
+	"github.com/ShinyTrinkets/overseer"
 	"github.com/labstack/echo"
 )
 
