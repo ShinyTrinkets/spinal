@@ -101,7 +101,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 
 			exe := parse.CodeBlocks[lang].Executable
 			env := append(os.Environ(), "SPIN_FILE="+outFile)
-			opts := overseer.Options{
+			opts := ovr.Options{
 				Buffered: false, Streaming: true,
 				Group: inFile, Dir: dir, Env: env,
 			}
@@ -113,7 +113,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			}
 
 			// Register the process with Overseer
-			o.Add(outFile, exe, outFile[baseLen:], opts)
+			o.Add(outFile, exe, []string{outFile[baseLen:]}, opts)
 		}
 	}
 

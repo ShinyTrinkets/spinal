@@ -66,7 +66,9 @@ func TestListCodeFiles(t *testing.T) {
 	// Testing depth 2
 	files, err = listCodeFiles("testdata/deep1/", 2)
 	assert.Equal(len(files), len(srcFiles)+1, "There should be %v code files != %v", len(srcFiles)+1, len(files))
+	assert.Nil(err)
 	// Testing depth 3
 	files, err = listCodeFiles("testdata/deep1/", 3)
 	assert.Equal(len(files), len(srcFiles)+2, "There should be %v code files != %v", len(srcFiles)+2, len(files))
+	assert.Nil(err)
 }

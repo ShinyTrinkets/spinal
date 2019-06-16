@@ -194,7 +194,7 @@ func ParseFile(fname string) CodeFile {
 	}
 
 	fm := FrontMatter{}
-	blocks := map[string]string{}
+	blocks := StringToString{}
 	parseFile = CodeFile{fm, fname, ctime, mtime, blocks}
 
 	text, err := ioutil.ReadFile(fname)

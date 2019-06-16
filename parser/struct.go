@@ -53,5 +53,7 @@ type CodeType struct {
 var CodeBlocks = map[string]CodeType{
 	"js": {"Javascript", "node", "//"},
 	"py": {"Python", "python3", "#"},
+	"sh": {"Bash", "bash", "#"},
+	// "go": {"Go", "go", "//"},
 	// "rb": {"Ruby", "ruby", "#"},
 }
