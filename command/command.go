@@ -130,7 +130,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		for s := range ch {
 			inFile := s.Group
 			outFile := s.ID
-			fmt.Printf("> STATE CHANGED %s ==> %s\n", inFile, outFile)
+			// fmt.Printf("> STATE CHANGED %s ==> %s\n", outFile, s.State)
 			state.SetLevel2(inFile, outFile, s)
 		}
 	}()

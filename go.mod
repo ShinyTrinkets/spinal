@@ -4,9 +4,8 @@ go 1.12
 
 require (
 	github.com/ShinyTrinkets/meta-logger v0.2.0
-	github.com/ShinyTrinkets/overseer v0.3.0
+	github.com/ShinyTrinkets/overseer v0.3.2
 	github.com/azer/logger v1.0.0
-	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
@@ -20,7 +19,6 @@ require (
 	github.com/jawher/mow.cli v1.1.0
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.2.9 // indirect
-	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20190502103701-55513cacd4ae
