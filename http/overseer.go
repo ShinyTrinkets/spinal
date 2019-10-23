@@ -18,7 +18,7 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 			return c.String(http.StatusBadRequest, "Invalid ID format")
 		}
 		if ovr.HasProc(id) {
-			return c.JSON(http.StatusOK, ovr.ToJSON(id))
+			return c.JSON(http.StatusOK, ovr.Status(id))
 		}
 		return c.String(http.StatusBadRequest, "Invalid proc ID")
 	})

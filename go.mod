@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/ShinyTrinkets/meta-logger v0.2.0
-	github.com/ShinyTrinkets/overseer v0.3.2
+	github.com/ShinyTrinkets/overseer v0.3.4
 	github.com/azer/logger v1.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/facebookgo/clock v0.0.0-20150410010913-600d898af40a // indirect
