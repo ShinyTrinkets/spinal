@@ -17,7 +17,7 @@ type (
 	codeFile = parse.CodeFile
 )
 
-// SpinUp receives a folder, finds all valid source-files and runs them.
+// SpinUp receives either a file or a folder, finds all valid source-files and runs them.
 // The call is blocked untill all procs finish,
 // or SIGINT or SIGTERM are sent to the parent process.
 // Force is enabled only for files, it can be dangerous for folders.
@@ -99,8 +99,9 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 				continue
 			}
 
-			exe := parse.CodeBlocks[lang].Executable
-			env := append(os.Environ(), "SPIN_FILE="+outFile)
+			env := os.Environ()
+			env = append(env, "SPIN_ID="+codeFile.ID)
+			env = append(env, "SPIN_FILE="+outFile)
 			opts := ovr.Options{
 				Buffered: false, Streaming: true,
 				Group: inFile, Dir: dir, Env: env,
@@ -113,6 +114,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			}
 
 			// Register the process with Overseer
+			exe := parse.CodeBlocks[lang].Executable
 			o.Add(outFile, exe, []string{outFile[baseLen:]}, opts)
 		}
 	}

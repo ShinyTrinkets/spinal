@@ -37,7 +37,7 @@ func NewServer(port string) *echo.Echo {
 	srv.Pre(middleware.RemoveTrailingSlash())
 
 	srv.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "There's nothing here, stranger")
+		return c.String(http.StatusOK, "The Spinal server is running")
 	})
 
 	// Get state lvl1 by ID

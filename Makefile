@@ -24,7 +24,7 @@ test:
 
 build:
 	go build -o spin -x -ldflags "$(GOBUILD_LDFLAGS)"
-	mv spin $(GOPATH)/bin/spin
+	mv spin ~/go/bin/spin
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o spin-darwin -ldflags "-s -w $(GOBUILD_LDFLAGS)"

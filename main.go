@@ -101,8 +101,8 @@ func cmdClient(cmd *cli.Cmd) {
 }
 
 func cmdSpinUp(cmd *cli.Cmd) {
-	cmd.Spec = "FOLDER [-f] [-n|--http] [--dry-run]"
-	rootDir := cmd.StringArg("FOLDER", "", "the folder to convert and run")
+	cmd.Spec = "FILES [-f] [-n|--http] [--dry-run]"
+	rootDir := cmd.StringArg("FILES", "", "the file or folder to convert and run")
 	force := cmd.BoolOpt("f force", false, "force conversion by ignoring the header")
 	noHTTP := cmd.BoolOpt("n no-http", false, "don't start the HTTP server")
 	httpOpts := cmd.StringOpt("http", "localhost:12323", "HTTP server host:port")
