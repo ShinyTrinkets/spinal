@@ -19,8 +19,8 @@ BUMP ?= patch
 .PHONY: test clean build release version
 
 test:
+	go test -v ./state
 	go test -v ./parser
-	go test -v ./http
 
 build:
 	go build -o spin -x -ldflags "$(GOBUILD_LDFLAGS)"

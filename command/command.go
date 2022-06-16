@@ -126,7 +126,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 
 	// Subscribe to state changes, for updating StateTree LVL 2
 	ch := make(chan *ovr.ProcessJSON)
-	o.Watch(ch)
+	o.WatchState(ch)
 
 	go func() {
 		for s := range ch {
