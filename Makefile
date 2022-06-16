@@ -11,8 +11,6 @@ GOBUILD_LDFLAGS ?= \
 	-X '$(REVISION_VAR)=$(REVISION_VALUE)' \
 	-X '$(BUILT_VAR)=$(BUILT_VALUE)'
 
-export GO111MODULE=on
-
 # Option for version bump
 BUMP ?= patch
 

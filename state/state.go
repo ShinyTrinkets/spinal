@@ -7,7 +7,8 @@ import (
 	ovr "github.com/ShinyTrinkets/overseer"
 )
 
-// type stateTree = map[string]Level1
+// There is only 1 state tree and cannot be changed
+var state sync.Map
 
 // Level1 represents one recipe/file
 // the children are the code files included in it
@@ -35,10 +36,7 @@ type Level2 struct {
 // Header2 represents Level2 properties
 type Header2 = ovr.ProcessJSON
 
-// There is only 1 state tree and cannot be changed
-var state sync.Map
-
-// GetState returns a copy of the state
+// GetState returns a full copy of the state
 func GetState() sync.Map {
 	return state
 }

@@ -36,6 +36,8 @@ func NewServer(port string) *echo.Echo {
 	srv.Server.Addr = port
 	srv.Pre(middleware.RemoveTrailingSlash())
 
+	srv.Static("/static", "static")
+
 	srv.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "The Spinal server is running")
 	})
