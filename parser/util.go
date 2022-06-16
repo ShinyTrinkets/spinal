@@ -15,19 +15,27 @@ func containsListStr(s []string, e string) bool {
 }
 
 func normalizeMapIgnore(obj interface{}, ignore []string) interface{} {
-	switch x := obj.(type) {
+	switch t := obj.(type) {
 	case map[interface{}]interface{}:
-		m2 := map[string]interface{}{}
-		for k, v := range x {
+		m := map[string]interface{}{}
+		for k, v := range t {
 			s := k.(string)
 			if !containsListStr(ignore, s) {
-				m2[s] = normalizeMapIgnore(v, ignore)
+				m[s] = normalizeMapIgnore(v, ignore)
 			}
 		}
-		return m2
+		return m
+	case map[string]interface{}:
+		m := map[string]interface{}{}
+		for k, v := range t {
+			if !containsListStr(ignore, k) {
+				m[k] = normalizeMapIgnore(v, ignore)
+			}
+		}
+		return m
 	case []interface{}:
-		for i, v := range x {
-			x[i] = normalizeMapIgnore(v, ignore)
+		for i, v := range t {
+			t[i] = normalizeMapIgnore(v, ignore)
 		}
 	}
 	return obj

@@ -21,6 +21,8 @@ type FrontMatter struct {
 	ID         string   `yaml:"id"  json:"id"`
 	Db         bool     `yaml:"db,omitempty"  json:"db,omitempty"`
 	Log        bool     `yaml:"log,omitempty" json:"log,omitempty"`
+	Cwd        string   `yaml:"cwd,omitempty" json:"cwd,omitempty"`
+	Env        []string `yaml:"env,omitempty" json:"env,omitempty"`
 	DelayStart uint     `yaml:"delayStart,omitempty" json:"delayStart,omitempty"`
 	RetryTimes uint     `yaml:"retryTimes,omitempty" json:"retryTimes,omitempty"`
 	Meta       MetaData `yaml:"meta" json:"meta"`

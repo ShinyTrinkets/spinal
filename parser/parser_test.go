@@ -53,6 +53,21 @@ func TestParseBlocks(t *testing.T) {
 	}
 }
 
+func TestSpecificFile(t *testing.T) {
+	assert := assert.New(t)
+	fname := "testdata/deep1/deep_file1.md"
+	r := ParseFile(fname)
+
+	assert.Equal(fname, r.Path)
+	assert.Equal("deep_file1", r.ID)
+	assert.Equal(".", r.Cwd)
+	assert.True(r.Enabled)
+	assert.True(r.Log)
+	assert.True(r.Db)
+
+	assert.Equal(map[string]interface{}{}, r.Meta)
+}
+
 func TestListCodeFiles(t *testing.T) {
 	assert := assert.New(t)
 	// Testing listing code files, depth 1

@@ -154,6 +154,7 @@ func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 
 	front := FrontMatter{codFile.Enabled, codFile.ID,
 		codFile.Db, codFile.Log,
+		codFile.Cwd, codFile.Env,
 		codFile.DelayStart,
 		codFile.RetryTimes,
 		codFile.Meta}
