@@ -12,6 +12,7 @@ var state sync.Map
 
 // Level1 represents one recipe/file
 // the children are the code files included in it
+// Both Level1 and Level2 must be JSON serializable
 type Level1 struct {
 	Props    Header1           `json:"props"`
 	Children map[string]Level2 `json:"children"`
@@ -29,6 +30,7 @@ type Header1 struct {
 }
 
 // Level2 represents one child from a recipe/file
+// Both Level1 and Level2 must be JSON serializable
 type Level2 struct {
 	Props Header2 `json:"props"`
 }
