@@ -18,8 +18,8 @@ type (
 )
 
 // SpinUp receives either a file or a folder, finds all valid source-files and runs them.
-// The call is blocked untill all procs finish,
-// or SIGINT or SIGTERM are sent to the parent process.
+// The call is blocked untill all procs finish, or
+// SIGINT or SIGTERM are sent to the parent process.
 // Force is enabled only for files, it can be dangerous for folders.
 // For dry run, the HTTP server and the Overseer will not run.
 func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool) {
@@ -75,6 +75,8 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		fmt.Printf("Cannot run! Invalid path!")
 		return
 	}
+
+	cfg := LoadConfig("config.yaml")
 
 	o := ovr.NewOverseer()
 
@@ -146,6 +148,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		http := srv.NewServer(httpOpts)
 		// Activate Overseer endpoints
 		srv.OverseerEndpoint(http, o)
+		srv.LogsEndpoint(http, cfg.LogDir)
 		srv.Serve(http)
 	}()
 

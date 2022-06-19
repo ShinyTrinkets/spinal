@@ -135,6 +135,7 @@ func listCodeFiles(folder string, scanDepth int) ([]string, error) {
 }
 
 // ConvertFile generates 1 or more code files, from one code file.
+// Force=true will convert a file without checking the header.
 func ConvertFile(codFile CodeFile, force bool) (StringToString, error) {
 	outFiles := StringToString{}
 	fName := codFile.Path

@@ -34,6 +34,7 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 
 	// Add, Supervise and Remove a process when complete
 	srv.GET("/run/:id", func(c echo.Context) error {
+		// WIP, not ready yet
 		id, err := url.PathUnescape(c.Param("id"))
 		if err != nil {
 			return c.String(http.StatusBadRequest,
