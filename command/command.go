@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	ovr "github.com/ShinyTrinkets/overseer"
+	config "github.com/ShinyTrinkets/spinal/config"
 	srv "github.com/ShinyTrinkets/spinal/http"
 	parse "github.com/ShinyTrinkets/spinal/parser"
 	"github.com/ShinyTrinkets/spinal/state"
@@ -44,6 +45,9 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		httpOpts = ""
 	}
 
+	// logically I should be loading the config very early
+	cfg := config.LoadConfig("config.yaml")
+
 	if !m.IsDir() && m.IsRegular() && m&400 != 0 {
 		// is file?
 		p := parse.ParseFile(fname)
@@ -75,8 +79,6 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		fmt.Printf("Cannot run! Invalid path!")
 		return
 	}
-
-	cfg := LoadConfig("config.yaml")
 
 	o := ovr.NewOverseer()
 
@@ -148,7 +150,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		http := srv.NewServer(httpOpts)
 		// Activate Overseer endpoints
 		srv.OverseerEndpoint(http, o)
-		srv.LogsEndpoint(http, cfg.LogDir)
+		srv.LogsEndpoint(http, cfg)
 		srv.Serve(http)
 	}()
 

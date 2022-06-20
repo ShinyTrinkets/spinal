@@ -40,5 +40,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Ignore logs
+logs
+
 # Ignore private projects
 *-projects
