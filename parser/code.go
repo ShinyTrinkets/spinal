@@ -74,14 +74,13 @@ func codeLangHeader(front FrontMatter, lang string) (str string) {
 // codeLangImports creates the DB and LOG imports for each language.
 func codeLangImports(front FrontMatter, lang string) (str string) {
 	if lang == "js" {
-		str = "let fse = require('fs-extra')\n"
+		str = ""
 		if front.Db {
 			str += ("\n" + dbCode(front, lang) + "\n")
 		}
 		if front.Log {
 			str += ("\n" + logCode(front, lang) + "\n")
 		}
-		str += "const trigger = require('trinkets/triggers');\n"
 	} else if lang == "py" {
 		str = "import functools\n"
 		str += "print = functools.partial(print, flush=True)\n"

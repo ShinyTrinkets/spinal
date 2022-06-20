@@ -34,9 +34,9 @@ func TestStateLvls(t *testing.T) {
 	assert.Equal(1, stateLength(&s))
 
 	assert.True(HasLevel1("x.md"))
-	assert.True(GetLevel1("x.md").Props.Enabled)
-	assert.Equal("x", GetLevel1("x.md").Props.ID)
-	assert.Equal("x/y/z", GetLevel1("x.md").Props.Path)
+	assert.True(GetLevel1("x.md").Enabled)
+	assert.Equal("x", GetLevel1("x.md").ID)
+	assert.Equal("x/y/z", GetLevel1("x.md").Path)
 
 	SetLevel2("x.md", "x.js",
 		&Header2{
@@ -46,9 +46,9 @@ func TestStateLvls(t *testing.T) {
 		})
 
 	s = GetState()
-	assert.Equal(1, stateLength(&s))
+	assert.Equal(2, stateLength(&s))
 
 	assert.True(HasLevel2("x.md", "x.js"))
-	assert.Equal("x", GetLevel2("x.md", "x.js").Props.ID)
-	assert.Equal(".", GetLevel2("x.md", "x.js").Props.Dir)
+	assert.Equal("x", GetLevel2("x.md", "x.js").ID)
+	assert.Equal(".", GetLevel2("x.md", "x.js").Dir)
 }

@@ -7,16 +7,10 @@ import (
 	ovr "github.com/ShinyTrinkets/overseer"
 )
 
+const separator = "∷"
+
 // There is only 1 state tree and cannot be changed
 var state sync.Map
-
-// Level1 represents one recipe/file
-// the children are the code files included in it
-// Both Level1 and Level2 must be JSON serializable
-type Level1 struct {
-	Props    Header1           `json:"props"`
-	Children map[string]Level2 `json:"children"`
-}
 
 // Header1 represents Level1 properties
 type Header1 struct {
@@ -24,15 +18,10 @@ type Header1 struct {
 	ID      string    `json:"id"`
 	Db      bool      `json:"db,omitempty"`
 	Log     bool      `json:"log,omitempty"`
+	Cwd     string    `json:"cwd,omitempty"`
 	Path    string    `json:"path"`
 	Ctime   time.Time `json:"ctime"`
 	Mtime   time.Time `json:"mtime"`
-}
-
-// Level2 represents one child from a recipe/file
-// Both Level1 and Level2 must be JSON serializable
-type Level2 struct {
-	Props Header2 `json:"props"`
 }
 
 // Header2 represents Level2 properties
@@ -50,32 +39,31 @@ func HasLevel1(name string) (exists bool) {
 }
 
 // GetLevel1 returns a lvl1 state
-func GetLevel1(name string) Level1 {
+// Level1 represents one recipe/file
+func GetLevel1(name string) Header1 {
 	l, _ := state.Load(name)
-	return l.(Level1)
+	return l.(Header1)
 }
 
 // SetLevel1 updates the StateTree
 func SetLevel1(name string, props *Header1) {
-	children := map[string]Level2{}
-	state.Store(name, Level1{*props, children})
+	state.Store(name, *props)
 }
 
 // HasLevel2 checks for a lvl2 name
 func HasLevel2(name1 string, name2 string) (exists bool) {
-	l := GetLevel1(name1)
-	_, exists = l.Children[name2]
+	_, exists = state.Load(name1 + separator + name2)
 	return
 }
 
 // GetLevel2 returns a lvl2 state
-func GetLevel2(name1 string, name2 string) Level2 {
-	l1 := GetLevel1(name1)
-	return l1.Children[name2]
+// Level2 represents one child from a recipe/file
+func GetLevel2(name1 string, name2 string) Header2 {
+	l, _ := state.Load(name1 + separator + name2)
+	return l.(Header2)
 }
 
 // SetLevel2 updates the StateTree
 func SetLevel2(name1 string, name2 string, props *Header2) {
-	l := GetLevel1(name1)
-	l.Children[name2] = Level2{*props}
+	state.Store(name1+separator+name2, *props)
 }

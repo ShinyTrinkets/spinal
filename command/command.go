@@ -25,9 +25,9 @@ type (
 // For dry run, the HTTP server and the Overseer will not run.
 func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool) {
 	var (
-		dir    string
-		pairs  map[string]strToStr
-		parsed map[string]codeFile
+		rootDir string
+		pairs   map[string]strToStr
+		parsed  map[string]codeFile
 	)
 
 	f, err := os.Stat(fname)
@@ -61,15 +61,15 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		}
 
 		fmt.Printf("Converting source file '%s' ...\n", fname)
-		dir = filepath.Dir(fname)
+		rootDir = filepath.Dir(fname)
 		pairs = map[string]strToStr{p.Path: outFiles}
 		parsed = map[string]codeFile{p.Path: p}
 
 	} else if m.IsDir() && m&400 != 0 {
 		// is folder?
-		dir = strings.TrimRight(fname, "/")
-		fmt.Printf("Converting all source-files from '%s' ...\n", dir)
-		pairs, parsed, err = parse.ConvertFolder(dir)
+		rootDir = strings.TrimRight(fname, "/")
+		fmt.Printf("Converting all source-files from '%s' ...\n", rootDir)
+		pairs, parsed, err = parse.ConvertFolder(rootDir)
 		if err != nil {
 			fmt.Printf("Cannot convert folder! Error: %v", err)
 			return
@@ -82,9 +82,14 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 
 	o := ovr.NewOverseer()
 
-	baseLen := len(dir) + 1
+	baseLen := len(rootDir) + 1
 	for inFile, convFiles := range pairs {
 		codeFile := parsed[inFile]
+		cwd := rootDir
+		if codeFile.Cwd != "" {
+			cwd = codeFile.Cwd
+		}
+
 		// Update StateTree LVL 1
 		state.SetLevel1(inFile,
 			&state.Header1{
@@ -92,10 +97,12 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 				ID:      codeFile.ID,
 				Db:      codeFile.Db,
 				Log:     codeFile.Log,
+				Cwd:     cwd,
 				Path:    codeFile.Path,
 				Ctime:   codeFile.Ctime,
 				Mtime:   codeFile.Mtime,
 			})
+		fmt.Println(state.GetLevel1(inFile))
 
 		for lang, outFile := range convFiles {
 			fmt.Printf("%s ==> %s\n", inFile, outFile)
@@ -108,7 +115,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 			env = append(env, "SPIN_FILE="+outFile)
 			opts := ovr.Options{
 				Buffered: false, Streaming: true,
-				Group: inFile, Dir: dir, Env: env,
+				Group: inFile, Dir: cwd, Env: env,
 			}
 			if codeFile.DelayStart > 0 {
 				opts.DelayStart = codeFile.DelayStart
