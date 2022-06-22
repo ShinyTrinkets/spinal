@@ -52,12 +52,13 @@ func (table *CacheTable) Get(key string) (interface{}, bool) {
 // Set adds record in the cache with given ttl.
 // If TTL is less than zero, it will be stored forever.
 func (table *CacheTable) Set(key string, value interface{}, ttl time.Duration) {
-	cacheItem := item{
-		expire: time.Now().Add(ttl).UnixMicro(),
-		value:  value,
-	}
-	if cacheItem.expire < 0 {
+	cacheItem := item{value: value}
+	if ttl == 0 {
+		cacheItem.expire = 0
+	} else if ttl < 0 {
 		cacheItem.expire = -1
+	} else {
+		cacheItem.expire = time.Now().Add(ttl).UnixMicro()
 	}
 	table.items.Store(key, cacheItem)
 }

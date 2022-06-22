@@ -1,7 +1,6 @@
 ---
 id: ping-service
 spinal: true
-log: true
 db: true
 servers:
   qwant.com: [80, 443]
@@ -21,7 +20,7 @@ const { portScan } = require('@croqaz/port-scan')
 
 // TODO : Should be using Human expressions here
 // Run heart-beat every 10 seconds
-trigger('timer', '*/10 * * * * *', () => log.info('Heartbeat ❤'))
+trigger('timer', '*/10 * * * * *', () => console.log('Heartbeat ❤'))
 // Every minute, run actions
 trigger('timer', '0 */1 * * * *', actions)
 

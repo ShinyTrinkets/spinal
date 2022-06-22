@@ -158,6 +158,7 @@ func SpinUp(fname string, force bool, httpOpts string, noHTTP bool, dryRun bool)
 		// Activate Overseer endpoints
 		srv.OverseerEndpoint(http, o)
 		srv.LogsEndpoint(http, cfg)
+		srv.CacheEndpoint(http)
 		srv.Serve(http)
 	}()
 

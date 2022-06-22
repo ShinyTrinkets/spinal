@@ -9,7 +9,7 @@ import (
 
 const timeUnit = 100 * time.Millisecond
 
-func TestTable(t *testing.T) {
+func TestTableTTL(t *testing.T) {
 	assert := assert.New(t)
 
 	table := CacheTable{name: "table1"}
@@ -38,4 +38,21 @@ func TestTable(t *testing.T) {
 	v, ok = table.Get("x")
 	assert.False(ok)
 	assert.Nil(v)
+}
+
+func TestTableNoTTL(t *testing.T) {
+	assert := assert.New(t)
+
+	table := CacheTable{name: "table2"}
+	assert.Equal(0, table.Count())
+	assert.False(table.Exists("x"))
+	assert.False(table.Exists("y"))
+
+	table.Set("x", 0.0, -1)
+	assert.Equal(1, table.Count())
+	assert.True(table.Exists("x"))
+
+	table.Set("y", 987, 0)
+	assert.Equal(2, table.Count())
+	assert.True(table.Exists("y"))
 }

@@ -3,6 +3,7 @@ package http
 import (
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,12 +32,12 @@ func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
 	})
 
 	// Read from a log; file ext is added automatically
-	srv.GET("/log", func(c echo.Context) error {
-		name := strings.Trim(c.QueryParam("name"), " ")
-		if name == "" {
-			return c.String(http.StatusBadRequest, "Name cannot be empty!")
+	srv.GET("/log/:id", func(c echo.Context) error {
+		id, err := url.PathUnescape(c.Param("id"))
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid ID")
 		}
-		text, err := ioutil.ReadFile(cfg.LogDir + "/" + name + cfg.LogExt)
+		text, err := ioutil.ReadFile(cfg.LogDir + "/" + id + cfg.LogExt)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "Cannot read log file!")
 		}
@@ -44,16 +45,16 @@ func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
 	})
 
 	// Append to a log; file ext is added automatically
-	srv.POST("/log", func(c echo.Context) error {
-		name := strings.Trim(c.QueryParam("name"), " ")
-		if name == "" {
-			return c.String(http.StatusBadRequest, "Name cannot be empty!")
+	srv.POST("/log/:id", func(c echo.Context) error {
+		id, err := url.PathUnescape(c.Param("id"))
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid ID")
 		}
 		msg := strings.Trim(c.QueryParam("msg"), " ")
 		if msg == "" {
 			return c.String(http.StatusBadRequest, "Message cannot be empty!")
 		}
-		logFile := cfg.LogDir + "/" + name + cfg.LogExt
+		logFile := cfg.LogDir + "/" + id + cfg.LogExt
 		// create if it doesn't exist
 		if !util.IsFile(logFile) {
 			err := ioutil.WriteFile(logFile, []byte(""), 0644)
