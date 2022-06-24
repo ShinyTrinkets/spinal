@@ -33,8 +33,22 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 	})
 
 	// Add, Supervise and Remove a process when complete
+	srv.GET("/stop/:id", func(c echo.Context) error {
+		id, err := url.PathUnescape(c.Param("id"))
+		if err != nil {
+			return c.String(http.StatusBadRequest,
+				fmt.Sprintf("No ID! Error: %v\n", err))
+		}
+
+		ovr.Stop(id)
+		time.Sleep(250 * time.Millisecond)
+		ovr.Remove(id)
+
+		return c.String(http.StatusOK, "Done")
+	})
+
+	// Add, Supervise and Remove a process when complete
 	srv.GET("/run/:id", func(c echo.Context) error {
-		// WIP, not ready yet
 		id, err := url.PathUnescape(c.Param("id"))
 		if err != nil {
 			return c.String(http.StatusBadRequest,
@@ -52,12 +66,12 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 		}
 
 		delay, err := strconv.ParseUint(c.QueryParam("delay"), 10, 16)
-		if err == nil {
+		if err != nil {
 			return c.String(http.StatusBadRequest,
 				fmt.Sprintf("Invalid delay value! Error: %v\n", err))
 		}
 		retry, err := strconv.ParseUint(c.QueryParam("retry"), 10, 16)
-		if err == nil {
+		if err != nil {
 			return c.String(http.StatusBadRequest,
 				fmt.Sprintf("Invalid retry value! Error: %v\n", err))
 		}
@@ -76,13 +90,15 @@ func OverseerEndpoint(srv *echo.Echo, ovr *overseer.Overseer) {
 
 		p := ovr.Add(id, args[0], args[1:], opts)
 		if p == nil {
-			return c.String(http.StatusBadRequest, "Proc not added!")
+			return c.String(http.StatusBadRequest, "Proc cannot added!")
 		}
 		fmt.Println(p)
 
-		ovr.Supervise(id)
-		time.Sleep(250 * time.Millisecond)
-		ovr.Remove(id)
+		go func() {
+			ovr.Supervise(id)
+			time.Sleep(250 * time.Millisecond)
+			ovr.Remove(id)
+		}()
 
 		return c.String(http.StatusOK, "Done")
 	})

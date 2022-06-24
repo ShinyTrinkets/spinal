@@ -1,17 +1,28 @@
 package http
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	config "github.com/ShinyTrinkets/spinal/config"
 	util "github.com/ShinyTrinkets/spinal/util"
 	"github.com/labstack/echo"
 )
+
+type LogEntry struct {
+	Level uint   `json:"level"`
+	Time  uint   `json:"time"`
+	Msg   string `json:"msg"`
+	Pid   uint   `json:"pid,omitempty"`
+}
 
 // LogsEndpoint enables log read/write endpoints
 func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
@@ -46,6 +57,8 @@ func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
 
 	// Append to a log; file ext is added automatically
 	srv.POST("/log/:id", func(c echo.Context) error {
+		// Using the pino & pino-pretty log format
+		// https://github.com/pinojs/pino-pretty
 		id, err := url.PathUnescape(c.Param("id"))
 		if err != nil {
 			return c.String(http.StatusBadRequest, "Invalid ID")
@@ -54,6 +67,16 @@ func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
 		if msg == "" {
 			return c.String(http.StatusBadRequest, "Message cannot be empty!")
 		}
+		lvl, err := strconv.ParseUint(c.QueryParam("lvl"), 10, 16)
+		if err != nil {
+			return c.String(http.StatusBadRequest,
+				fmt.Sprintf("Invalid Level value! Error: %v\n", err))
+		}
+		pid, err := strconv.ParseUint(c.QueryParam("pid"), 10, 16)
+		if err != nil {
+			fmt.Printf("Invalid PID value! Error: %v\n", err)
+		}
+
 		logFile := cfg.LogDir + "/" + id + cfg.LogExt
 		// create if it doesn't exist
 		if !util.IsFile(logFile) {
@@ -68,7 +91,14 @@ func LogsEndpoint(srv *echo.Echo, cfg *config.SpinalConfig) {
 			return c.String(http.StatusBadRequest, "Cannot open log file for append!")
 		}
 		defer file.Close()
-		if _, err := file.WriteString(msg + "\n"); err != nil {
+
+		ts := int64(time.Nanosecond) * time.Now().UnixNano() / int64(time.Millisecond)
+		le := LogEntry{Level: uint(lvl), Time: uint(ts), Msg: msg}
+		if pid != 0 {
+			le.Pid = uint(pid)
+		}
+		line, _ := json.Marshal(le)
+		if _, err := file.WriteString(string(line) + "\n"); err != nil {
 			return c.String(http.StatusBadRequest, "Cannot append into log file!")
 		}
 		return c.String(http.StatusBadRequest, "OK")

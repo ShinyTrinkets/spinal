@@ -14,11 +14,13 @@ GOBUILD_LDFLAGS ?= \
 # Option for version bump
 BUMP ?= patch
 
-.PHONY: test clean build release version
+.PHONY: test coverage clean build release version
 
 test:
-	go test -v ./state
-	go test -v ./parser
+	go test -v ./parser ./state ./kvstore
+
+coverage:
+	go test -failfast -covermode=atomic -coverprofile=coverage.out ./parser ./state ./kvstore
 
 build:
 	go build -o spin -x -ldflags "$(GOBUILD_LDFLAGS)"

@@ -13,6 +13,23 @@ const (
 // StringToString is a helper map
 type StringToString map[string]string
 
+type CodeType struct {
+	Name       string
+	Executable string
+	Comment    string
+}
+
+// All known code block types
+var CodeBlocks = map[string]CodeType{
+	"js":  {"Javascript", "node", "//"}, // CommonJS
+	"mjs": {"Javascript", "node", "//"}, // ES Modules
+	"py":  {"Python", "python3", "#"},
+	"sh":  {"Bash", "bash", "#"},
+	"zsh": {"ZSH", "zsh", "#"},
+	// "go": {"Go", "go", "//"},
+	// "rb": {"Ruby", "ruby", "#"},
+}
+
 // MetaData is a general object
 type MetaData interface{}
 
@@ -43,19 +60,4 @@ func (self *CodeFile) IsValid() bool {
 	}
 	l := len(self.ID)
 	return (l > 0 && l < 100)
-}
-
-type CodeType struct {
-	Name       string
-	Executable string
-	Comment    string
-}
-
-// All known code block types
-var CodeBlocks = map[string]CodeType{
-	"js": {"Javascript", "node", "//"},
-	"py": {"Python", "python3", "#"},
-	"sh": {"Bash", "bash", "#"},
-	// "go": {"Go", "go", "//"},
-	// "rb": {"Ruby", "ruby", "#"},
 }

@@ -85,6 +85,17 @@ func codeLangImports(front FrontMatter, lang string) (str string) {
 			str += ("\n" + logCode(front, lang) + "\n")
 		}
 		str += "const trigger = require('trinkets/triggers');\n"
+	} else if lang == "mjs" {
+		str = ""
+		if front.Db || front.Log {
+			str = "import {fse} from 'fs-extra';\n"
+		}
+		if front.Db {
+			str += ("\n" + dbCode(front, lang) + "\n")
+		}
+		if front.Log {
+			str += ("\n" + logCode(front, lang) + "\n")
+		}
 	} else if lang == "py" {
 		str = "import functools\n"
 		str += "print = functools.partial(print, flush=True)\n"

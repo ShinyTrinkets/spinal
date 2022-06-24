@@ -1,0 +1,25 @@
+name: Spinal
+
+on: [push]
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '>=1.17.0'
+
+    - name: Run tests
+      run: |
+        go version
+        make test
+
+    - if: ${{ matrix.os == 'ubuntu-latest' }}
+      name: Run coverage
+      run: make coverage
