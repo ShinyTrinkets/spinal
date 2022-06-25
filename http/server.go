@@ -54,10 +54,12 @@ func NewServer(port string) *echo.Echo {
 		}
 		return c.String(http.StatusBadRequest, "Invalid state ID")
 	})
+
 	// Get app state
-	srv.GET("/state", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, state.GetState())
-	})
+	// This looks BROKEN?
+	// srv.GET("/state", func(c echo.Context) error {
+	// 	return c.JSON(http.StatusOK, state.GetState())
+	// })
 
 	return srv
 }

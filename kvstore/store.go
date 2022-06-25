@@ -31,7 +31,7 @@ func Store(table string) *CacheTable {
 		_, ok = cache[table]
 		// Double check whether the table exists or not.
 		if !ok {
-			cache[table] = &CacheTable{name: table, done: make(chan bool)}
+			cache[table] = &CacheTable{done: make(chan bool)}
 		}
 		mutex.Unlock()
 	}

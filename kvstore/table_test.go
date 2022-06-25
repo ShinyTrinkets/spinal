@@ -12,7 +12,7 @@ const timeUnit = 100 * time.Millisecond
 func TestTableTTL(t *testing.T) {
 	assert := assert.New(t)
 
-	table := CacheTable{name: "table1"}
+	table := NewCache()
 	assert.Equal(0, table.Count())
 	assert.False(table.Exists("x"))
 
@@ -43,7 +43,7 @@ func TestTableTTL(t *testing.T) {
 func TestTableNoTTL(t *testing.T) {
 	assert := assert.New(t)
 
-	table := CacheTable{name: "table2"}
+	table := NewCache()
 	assert.Equal(0, table.Count())
 	assert.False(table.Exists("x"))
 	assert.False(table.Exists("y"))

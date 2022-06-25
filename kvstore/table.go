@@ -6,13 +6,14 @@
 package kvstore
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 )
 
 type CacheTable struct {
-	name         string
-	items        sync.Map
+	sync.RWMutex
+	items        map[string]item
 	done         chan bool
 	cleanRunning bool
 }
@@ -22,36 +23,50 @@ type item struct {
 	value  interface{}
 }
 
+func NewCache() *CacheTable {
+	return &CacheTable{
+		items: make(map[string]item),
+		done:  make(chan bool),
+	}
+}
+
+func (c *CacheTable) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.items)
+}
+
 // internal get + delete expired items (probably a bad idea)
-func (table *CacheTable) get(key string) (item, bool) {
-	x, ok := table.items.Load(key)
+func (c *CacheTable) get(key string) (item, bool) {
+	c.RLock()
+	cacheItem, ok := c.items[key]
+	c.RUnlock()
 	if !ok {
 		return item{}, false
 	}
-	cacheItem := x.(item)
 	if cacheItem.expire > 0 && cacheItem.expire < time.Now().UnixMicro() {
-		table.items.Delete(key)
+		c.Lock()
+		delete(c.items, key)
+		c.Unlock()
 		return item{}, false
 	}
 	return cacheItem, true
 }
 
-func (table *CacheTable) Exists(key string) bool {
-	_, ok := table.get(key)
+func (c *CacheTable) Exists(key string) bool {
+	_, ok := c.get(key)
 	return ok
 }
 
 // Get returns stored record.
 // First returned: the stored value.
 // Second returned: existence flag like in the map.
-func (table *CacheTable) Get(key string) (interface{}, bool) {
-	cacheItem, ok := table.get(key)
+func (c *CacheTable) Get(key string) (interface{}, bool) {
+	cacheItem, ok := c.get(key)
 	return cacheItem.value, ok
 }
 
 // Set adds record in the cache with given ttl.
 // If TTL is less than zero, it will be stored forever.
-func (table *CacheTable) Set(key string, value interface{}, ttl time.Duration) {
+func (c *CacheTable) Set(key string, value interface{}, ttl time.Duration) {
 	cacheItem := item{value: value}
 	if ttl == 0 {
 		cacheItem.expire = 0
@@ -60,44 +75,46 @@ func (table *CacheTable) Set(key string, value interface{}, ttl time.Duration) {
 	} else {
 		cacheItem.expire = time.Now().Add(ttl).UnixMicro()
 	}
-	table.items.Store(key, cacheItem)
+	c.Lock()
+	c.items[key] = cacheItem
+	c.Unlock()
 }
 
 // Delete deletes the key and its value from the cache.
-func (table *CacheTable) Delete(key string) {
-	table.items.Delete(key)
+func (c *CacheTable) Delete(key string) {
+	c.Lock()
+	defer c.Unlock()
+	delete(c.items, key)
 }
 
 // Count returns how many items are currently stored in the cache.
-func (table *CacheTable) Count() int {
-	var i int
-	table.items.Range(func(k, x interface{}) bool {
-		i++
-		return true
-	})
-	return i
+func (c *CacheTable) Count() int {
+	c.RLock()
+	defer c.RUnlock()
+	return len(c.items)
 }
 
 // cleanUp removes outdated items from the cache.
-func (table *CacheTable) cleanUp() {
+func (c *CacheTable) cleanUp() {
 	now := time.Now().UnixMicro()
-	table.items.Range(func(key, x interface{}) bool {
-		cacheItem := x.(item)
-		if cacheItem.expire > 0 && cacheItem.expire < now {
-			table.items.Delete(key)
+	c.Lock()
+	defer c.Unlock()
+
+	for key, item := range c.items {
+		if item.expire > 0 && item.expire < now {
+			delete(c.items, key)
 		}
-		return true
-	})
+	}
 }
 
 // cleanupLoop blocks the loop executing the cleanup.
-func (table *CacheTable) cleanupLoop(interval time.Duration) {
+func (c *CacheTable) cleanupLoop(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	for {
 		select {
 		case <-ticker.C:
-			table.cleanUp()
-		case <-table.done:
+			c.cleanUp()
+		case <-c.done:
 			ticker.Stop()
 			return
 		}
@@ -108,20 +125,20 @@ func (table *CacheTable) cleanupLoop(interval time.Duration) {
 // by an internal ticker with the given interval.
 // If the cleanup loop is already running, it will be
 // stopped and restarted using the new specification.
-func (table *CacheTable) StartCleaner(interval time.Duration) {
-	if table.cleanRunning {
-		table.StopCleaner()
+func (c *CacheTable) StartCleaner(interval time.Duration) {
+	if c.cleanRunning {
+		c.StopCleaner()
 	}
-	go table.cleanupLoop(interval)
+	go c.cleanupLoop(interval)
 }
 
 // StopCleaner stops the cleaner go routine and timer.
 // This should always be called after exiting a scope
 // where CacheTable is used that the data can be cleaned
 // up correctly.
-func (table *CacheTable) StopCleaner() {
-	if !table.cleanRunning {
+func (c *CacheTable) StopCleaner() {
+	if !c.cleanRunning {
 		return
 	}
-	table.done <- true
+	c.done <- true
 }

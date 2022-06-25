@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -43,7 +44,7 @@ func main() {
 	dbg = *app.BoolOpt("d debug", false, "Enable debug logs")
 
 	app.Command("list", "List all candidate source-files from folder", cmdList)
-	app.Command("check", "Show info about a running Spinal instance", cmdClient)
+	app.Command("status", "Show the status of a running Spinal instance", cmdClient)
 	app.Command("up", "Convert all source-files from folder and execute them", cmdSpinUp)
 
 	app.Run(os.Args)
@@ -93,10 +94,15 @@ func cmdClient(cmd *cli.Cmd) {
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("Failed Spinal reponse. Error: %v", err)
+			fmt.Printf("Failed Spinal reponse. Error: %v\n", err)
 			return
 		}
-		fmt.Println("Procs: " + string(body))
+		procs := []string{}
+		json.Unmarshal([]byte(body), &procs)
+		fmt.Println("Running procs:")
+		for _, proc := range procs {
+			fmt.Printf("- %v\n", proc)
+		}
 	}
 }
 

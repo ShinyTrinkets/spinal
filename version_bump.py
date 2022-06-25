@@ -2,8 +2,8 @@
 
 """
 Direct usage:
-python version_bump.py `cat VERSION` --patch > VERSION
-python version_bump.py `cat VERSION` --minor > VERSION
+python version_bump.py `cat VERSION.txt` --patch > VERSION.txt
+python version_bump.py `cat VERSION.txt` --minor > VERSION.txt
 
 With make:
 make version BUMP=minor
